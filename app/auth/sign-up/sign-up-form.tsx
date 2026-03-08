@@ -32,8 +32,11 @@ export default function SignUpForm() {
   const [error, setError] = useState("");
 
   const emailRedirectTo = useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    return `${window.location.origin}/auth/login`;
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "");
+    if (!siteUrl) return undefined;
+    return `${siteUrl}/auth/login`;
   }, []);
 
   useEffect(() => {
