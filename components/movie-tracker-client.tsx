@@ -218,6 +218,29 @@ export default function MovieTrackerClient({
     setWatchedLoading(false);
   }, []);
 
+  const fetchLatestMovieSnapshot = useCallback(
+    async (imdbID: string): Promise<MovieSnapshot | undefined> => {
+      try {
+        const response = await fetch(
+          `/api/omdb/movie?imdbId=${encodeURIComponent(imdbID)}`,
+          { cache: "no-store" },
+        );
+
+        if (!response.ok) return undefined;
+
+        const payload = (await response.json()) as {
+          movie?: OmdbMovieDetails | null;
+        };
+        if (!payload.movie) return undefined;
+
+        return buildSnapshotFromMovieDetails(payload.movie);
+      } catch {
+        return undefined;
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     let mounted = true;
 
@@ -469,18 +492,26 @@ export default function MovieTrackerClient({
       setSyncError("");
       const previousWatched = watched;
       setPendingUpdateIds((currentIds) => [...currentIds, id]);
+      const latestSnapshot =
+        updates.movieSnapshot ?? (await fetchLatestMovieSnapshot(id));
+      const resolvedUpdates = {
+        ...updates,
+        movieSnapshot: latestSnapshot,
+      };
+
       setWatched((currentWatched) =>
         currentWatched.map((movie) =>
           movie.imdbID === id
             ? {
                 ...movie,
-                userRating: updates.userRating,
-                comment: updates.comment,
-                title: updates.movieSnapshot?.title ?? movie.title,
-                year: updates.movieSnapshot?.year ?? movie.year,
-                poster: updates.movieSnapshot?.poster ?? movie.poster,
-                imdbRating: updates.movieSnapshot?.imdbRating ?? movie.imdbRating,
-                runtime: updates.movieSnapshot?.runtime ?? movie.runtime,
+                userRating: resolvedUpdates.userRating,
+                comment: resolvedUpdates.comment,
+                title: resolvedUpdates.movieSnapshot?.title ?? movie.title,
+                year: resolvedUpdates.movieSnapshot?.year ?? movie.year,
+                poster: resolvedUpdates.movieSnapshot?.poster ?? movie.poster,
+                imdbRating:
+                  resolvedUpdates.movieSnapshot?.imdbRating ?? movie.imdbRating,
+                runtime: resolvedUpdates.movieSnapshot?.runtime ?? movie.runtime,
               }
             : movie,
         ),
@@ -489,10 +520,10 @@ export default function MovieTrackerClient({
       const { error } = await supabase
         .from("watched_movies")
         .update({
-          user_rating: updates.userRating,
-          comment: updates.comment ?? null,
-          ...(updates.movieSnapshot
-            ? { movie_snapshot: updates.movieSnapshot }
+          user_rating: resolvedUpdates.userRating,
+          comment: resolvedUpdates.comment ?? null,
+          ...(resolvedUpdates.movieSnapshot
+            ? { movie_snapshot: resolvedUpdates.movieSnapshot }
             : {}),
         })
         .eq("user_id", authUser.id)
