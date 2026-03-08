@@ -14,7 +14,7 @@ interface SearchInputProps {
 export default function SearchInput({
   initialQuery,
   resultCount,
-}: SearchInputProps): JSX.Element {
+}: SearchInputProps) {
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement | null>(null);

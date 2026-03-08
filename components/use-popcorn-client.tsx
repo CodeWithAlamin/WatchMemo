@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Clapperboard,
@@ -46,7 +46,7 @@ export default function UsePopcornClient({
   movies,
   selectedMovie,
   fetchError,
-}: UsePopcornClientProps): JSX.Element {
+}: UsePopcornClientProps) {
   const [watched, setWatched] = useLocalStorageState<WatchedMovie[]>(
     [],
     "watched",
@@ -73,25 +73,16 @@ export default function UsePopcornClient({
     };
   }, [selectedMovie?.Title]);
 
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent): void {
-      if (event.key !== "Escape" || !selectedId) return;
-      handleCloseMovie();
-    }
+  const updateSearchParams = useCallback(
+    (updater: (params: URLSearchParams) => void): void => {
+      const params = new URLSearchParams(searchParams.toString());
+      updater(params);
 
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [selectedId]);
-
-  function updateSearchParams(
-    updater: (params: URLSearchParams) => void,
-  ): void {
-    const params = new URLSearchParams(searchParams.toString());
-    updater(params);
-
-    const next = params.toString();
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }
+      const next = params.toString();
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
 
   function handleSelectMovie(imdbID: string): void {
     updateSearchParams((params) => {
@@ -105,12 +96,22 @@ export default function UsePopcornClient({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleCloseMovie(): void {
+  const handleCloseMovie = useCallback((): void => {
     updateSearchParams((params) => {
       params.delete("selected");
     });
     setMobilePanel("search");
-  }
+  }, [updateSearchParams]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key !== "Escape" || !selectedId) return;
+      handleCloseMovie();
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selectedId, handleCloseMovie]);
 
   function handleMobilePanelChange(panel: "search" | "watched"): void {
     setMobilePanel(panel);
@@ -286,7 +287,7 @@ function MovieList({
   movies: OmdbSearchMovie[];
   selectedId: string | null;
   onSelectMovie: (id: string) => void;
-}): JSX.Element {
+}) {
   if (!movies.length) {
     return (
       <div className="rounded-2xl border bg-muted/60 p-6 text-center">
@@ -346,7 +347,7 @@ function MovieDetails({
     id: string,
     updates: Pick<WatchedMovie, "userRating" | "comment">,
   ) => void;
-}): JSX.Element {
+}) {
   const [userRating, setUserRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isEditingWatched, setIsEditingWatched] = useState(false);
@@ -519,7 +520,7 @@ function MovieDetails({
   );
 }
 
-function WatchedSummary({ watched }: { watched: WatchedMovie[] }): JSX.Element {
+function WatchedSummary({ watched }: { watched: WatchedMovie[] }) {
   const { avgImdbRating, avgUserRating, avgRuntime } = useMemo(() => {
     return {
       avgImdbRating: average(watched.map((movie) => movie.imdbRating)),
@@ -544,7 +545,7 @@ function Metric({
 }: {
   label: string;
   value: string;
-}): JSX.Element {
+}) {
   return (
     <div className="rounded-xl border bg-secondary/45 p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -566,7 +567,7 @@ function WatchedMoviesList({
     id: string,
     updates: Pick<WatchedMovie, "userRating" | "comment">,
   ) => void;
-}): JSX.Element {
+}) {
   if (!watched.length) {
     return (
       <div className="rounded-2xl border bg-muted/60 p-6 text-center">
@@ -603,7 +604,7 @@ function WatchedMovieItem({
     id: string,
     updates: Pick<WatchedMovie, "userRating" | "comment">,
   ) => void;
-}): JSX.Element {
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftRating, setDraftRating] = useState(movie.userRating);
   const [draftComment, setDraftComment] = useState(movie.comment ?? "");
@@ -710,7 +711,7 @@ function Poster({
   src: string;
   alt: string;
   size?: "sm" | "lg";
-}): JSX.Element {
+}) {
   const dimension = size === "lg" ? 120 : 56;
 
   if (src === "N/A") {
@@ -736,7 +737,7 @@ function Poster({
   );
 }
 
-function ErrorMessage({ message }: { message: string }): JSX.Element {
+function ErrorMessage({ message }: { message: string }) {
   return (
     <p className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-semibold text-destructive">
       {message}

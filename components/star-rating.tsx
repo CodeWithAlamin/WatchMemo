@@ -31,7 +31,7 @@ export default function StarRating({
   defaultRating = 0,
   rating: controlledRating,
   onSetRating,
-}: StarRatingProps): JSX.Element {
+}: StarRatingProps) {
   const [uncontrolledRating, setUncontrolledRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
   const rating = controlledRating ?? uncontrolledRating;
@@ -75,7 +75,7 @@ function Star({
   onHoverOut,
   color,
   size,
-}: StarProps): JSX.Element {
+}: StarProps) {
   return (
     <button
       type="button"

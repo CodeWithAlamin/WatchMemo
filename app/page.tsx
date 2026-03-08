@@ -12,7 +12,7 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
-}): Promise<JSX.Element> {
+}) {
   const resolvedParams = await searchParams;
   const query = getParam(resolvedParams?.q);
   const selectedId = getParam(resolvedParams?.selected);
