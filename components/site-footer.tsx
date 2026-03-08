@@ -23,8 +23,8 @@ const socialLinks = [
 export default function SiteFooter() {
   return (
     <footer className="border-t border-border/70 bg-background/80">
-      <div className="mx-auto w-full max-w-6xl px-4 py-5 text-sm text-muted-foreground sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto w-full max-w-6xl px-4 py-3 text-sm text-muted-foreground sm:px-6 sm:py-3.5 lg:px-8">
+        <div className="flex flex-col items-center gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="text-center lg:text-left">
             <Image
               src="/watchmemo-logo-wordmark.svg"
@@ -33,7 +33,7 @@ export default function SiteFooter() {
               height={36}
               className="mx-auto h-7 w-auto lg:mx-0"
             />
-            <p className="mt-1 text-xs">
+            <p className="mt-0.5 text-xs">
               © {new Date().getFullYear()} All rights reserved.
             </p>
           </div>

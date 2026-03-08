@@ -529,9 +529,9 @@ export default function MovieTrackerClient({
   }
 
   return (
-    <main className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-      <section className="sticky top-3 z-50 mb-6 rounded-3xl border bg-background/90 p-4 shadow-xl backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 sm:p-5">
-        <div className="space-y-3">
+    <main className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden px-4 pb-1 pt-1 sm:px-6 sm:pb-2 sm:pt-2 lg:px-8 lg:pb-2 lg:pt-2">
+      <section className="sticky top-1 z-50 mb-3 rounded-3xl border bg-background/90 p-2 shadow-md shadow-black/10 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 sm:p-3">
+        <div className="space-y-1.5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <Image
@@ -618,9 +618,9 @@ export default function MovieTrackerClient({
         </Button>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-2">
+      <section className="grid gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-2">
         <Card
-          className={`overflow-hidden rounded-3xl border-0 bg-card/95 py-0 shadow-lg ${
+          className={`overflow-hidden rounded-3xl border-0 bg-card/95 py-0 shadow-lg lg:h-full lg:min-h-0 lg:flex-col ${
             activeSelectedId
               ? "hidden lg:flex"
               : mobilePanel === "search"
@@ -637,7 +637,7 @@ export default function MovieTrackerClient({
             </CardDescription>
           </CardHeader>
           <Separator />
-          <CardContent className="p-4">
+          <CardContent className="p-4 lg:flex-1 lg:overflow-y-auto">
             {fetchError ? <ErrorMessage message={fetchError} /> : null}
             {!fetchError ? (
               <MovieList
@@ -650,7 +650,7 @@ export default function MovieTrackerClient({
         </Card>
 
         <Card
-          className={`overflow-hidden rounded-3xl border-0 bg-card/95 py-0 shadow-lg ${
+          className={`overflow-hidden rounded-3xl border-0 bg-card/95 py-0 shadow-lg lg:h-full lg:min-h-0 lg:flex-col ${
             activeSelectedId
               ? "flex"
               : mobilePanel === "watched"
@@ -681,7 +681,7 @@ export default function MovieTrackerClient({
             </CardDescription>
           </CardHeader>
           <Separator />
-          <CardContent className="p-4">
+          <CardContent className="p-4 lg:flex-1 lg:overflow-y-auto">
             {activeSelectedId && isSelectedMovieLoading ? (
               <MovieDetailsSkeleton />
             ) : activeSelectedId && selectedMovie ? (
