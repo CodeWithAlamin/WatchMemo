@@ -62,14 +62,14 @@ export default function UsePopcornClient({
 
   useEffect(() => {
     if (!selectedMovie?.Title) {
-      document.title = "WatchLog";
+      document.title = "WatchMemo";
       return;
     }
 
-    document.title = `${selectedMovie.Title} | WatchLog`;
+    document.title = `${selectedMovie.Title} | WatchMemo`;
 
     return () => {
-      document.title = "WatchLog";
+      document.title = "WatchMemo";
     };
   }, [selectedMovie?.Title]);
 
@@ -161,7 +161,7 @@ export default function UsePopcornClient({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                WatchLog
+                WatchMemo
               </h1>
               <p className="mt-1 text-xs text-muted-foreground">
                 Search. Rate. Remember.

@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "WatchLog",
-    short_name: "WatchLog",
+    name: "WatchMemo",
+    short_name: "WatchMemo",
     description:
       "Personal movie watch history tracker with ratings and notes.",
     start_url: "/",

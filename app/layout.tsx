@@ -5,9 +5,9 @@ import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
-const siteName = "WatchLog";
+const siteName = "WatchMemo";
 const siteDescription =
-  "WatchLog is your personal movie watch history tracker. Search films, rate what you watched, and keep private viewing notes for future reference.";
+  "WatchMemo is your personal movie watch history tracker. Search films, rate what you watched, and keep private viewing notes for future reference.";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 
 export const metadata: Metadata = {

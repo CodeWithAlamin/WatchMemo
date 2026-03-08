@@ -1,6 +1,6 @@
 <div align="center">
 
-# WatchLog
+# WatchMemo
 
 A personal movie watch-history tracker built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
 
@@ -13,9 +13,9 @@ A personal movie watch-history tracker built with **Next.js 15**, **React 19**, 
 
 ---
 
-## What WatchLog Is
+## What WatchMemo Is
 
-WatchLog is a personal store for your watched-movie history.
+WatchMemo is a personal store for your watched-movie history.
 
 - Search movies from OMDb
 - Save ratings and personal notes
