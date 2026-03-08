@@ -50,6 +50,7 @@ interface MovieTrackerClientProps {
   selectedMovie: OmdbMovieDetails | null;
   fetchError: string;
 }
+type WatchedFilterTab = "all" | "top" | "good" | "pass";
 
 type WatchedMovieRow = {
   user_id: string;
@@ -102,8 +103,8 @@ function buildSnapshotFromMovieDetails(movie: OmdbMovieDetails): MovieSnapshot {
   };
 }
 
-function formatFiveStarLabel(scoreOutOfTen: number): string {
-  const stars = Math.max(0, Math.min(5, Math.round(scoreOutOfTen / 2)));
+function formatFiveStarLabel(scoreOutOfFive: number): string {
+  const stars = Math.max(0, Math.min(5, Math.round(scoreOutOfFive)));
   return `${stars}/5`;
 }
 
@@ -112,13 +113,8 @@ const isAvailableText = (value?: string | null): value is string =>
 
 const isAuthSessionMissingError = (message: string): boolean =>
   message.toLowerCase().includes("auth session missing");
-const RATING_MESSAGES = [
-  "Very bad",
-  "Not good",
-  "Fine",
-  "Good",
-  "Excellent",
-];
+const RATING_MESSAGES = ["Very bad", "Not good", "Fine", "Good", "Excellent"];
+const LIKED_STAR_THRESHOLD = 4;
 
 export default function MovieTrackerClient({
   initialQuery,
@@ -131,11 +127,17 @@ export default function MovieTrackerClient({
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [syncError, setSyncError] = useState("");
-  const [mobilePanel, setMobilePanel] = useState<"search" | "watched">("search");
+  const [mobilePanel, setMobilePanel] = useState<"search" | "watched">(
+    "search",
+  );
   const [pendingAddId, setPendingAddId] = useState<string | null>(null);
   const [pendingUpdateIds, setPendingUpdateIds] = useState<string[]>([]);
   const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
-  const [pendingSelectedId, setPendingSelectedId] = useState<string | null>(null);
+  const [pendingSelectedId, setPendingSelectedId] = useState<string | null>(
+    null,
+  );
+  const [watchedFilterTab, setWatchedFilterTab] =
+    useState<WatchedFilterTab>("all");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -152,6 +154,32 @@ export default function MovieTrackerClient({
     const query = searchParams.toString();
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
+  const watchedSortedByRating = useMemo(() => {
+    const filtered = watched.filter((movie) => {
+      if (watchedFilterTab === "top") return movie.userRating === 5;
+      if (watchedFilterTab === "good")
+        return movie.userRating >= 3 && movie.userRating <= 4;
+      if (watchedFilterTab === "pass") return movie.userRating <= 2;
+      return true;
+    });
+
+    return filtered.sort((a, b) => {
+      if (b.userRating !== a.userRating) return b.userRating - a.userRating;
+      if (b.imdbRating !== a.imdbRating) return b.imdbRating - a.imdbRating;
+      return a.title.localeCompare(b.title);
+    });
+  }, [watched, watchedFilterTab]);
+  const watchedCounts = useMemo(
+    () => ({
+      all: watched.length,
+      top: watched.filter((movie) => movie.userRating === 5).length,
+      good: watched.filter(
+        (movie) => movie.userRating >= 3 && movie.userRating <= 4,
+      ).length,
+      pass: watched.filter((movie) => movie.userRating <= 2).length,
+    }),
+    [watched],
+  );
 
   useEffect(() => {
     if (!selectedMovie?.Title) {
@@ -255,7 +283,9 @@ export default function MovieTrackerClient({
   useEffect(() => {
     if (!authUser || !selectedMovie) return;
 
-    const watchedEntry = watched.find((movie) => movie.imdbID === selectedMovie.imdbID);
+    const watchedEntry = watched.find(
+      (movie) => movie.imdbID === selectedMovie.imdbID,
+    );
     if (!watchedEntry) return;
 
     const snapshot = buildSnapshotFromMovieDetails(selectedMovie);
@@ -263,7 +293,8 @@ export default function MovieTrackerClient({
       watchedEntry.title !== (snapshot.title ?? watchedEntry.title) ||
       watchedEntry.year !== (snapshot.year ?? watchedEntry.year) ||
       watchedEntry.poster !== (snapshot.poster ?? watchedEntry.poster) ||
-      watchedEntry.imdbRating !== Number(snapshot.imdbRating ?? watchedEntry.imdbRating) ||
+      watchedEntry.imdbRating !==
+        Number(snapshot.imdbRating ?? watchedEntry.imdbRating) ||
       watchedEntry.runtime !== Number(snapshot.runtime ?? watchedEntry.runtime);
 
     if (!needsRefresh) return;
@@ -308,7 +339,9 @@ export default function MovieTrackerClient({
       updater(params);
 
       const next = params.toString();
-      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+      router.replace(next ? `${pathname}?${next}` : pathname, {
+        scroll: false,
+      });
     },
     [pathname, router, searchParams],
   );
@@ -379,7 +412,9 @@ export default function MovieTrackerClient({
         const exists = current.some((item) => item.imdbID === movie.imdbID);
         if (!exists) return [movie, ...current];
 
-        return current.map((item) => (item.imdbID === movie.imdbID ? movie : item));
+        return current.map((item) =>
+          item.imdbID === movie.imdbID ? movie : item,
+        );
       });
 
       const { error } = await supabase.from("watched_movies").upsert(
@@ -436,7 +471,9 @@ export default function MovieTrackerClient({
       if (error) {
         if (isAuthSessionMissingError(error.message)) {
           setWatched(previousWatched);
-          setPendingDeleteIds((current) => current.filter((item) => item !== id));
+          setPendingDeleteIds((current) =>
+            current.filter((item) => item !== id),
+          );
           redirectToAuth();
           return;
         }
@@ -486,7 +523,8 @@ export default function MovieTrackerClient({
                 poster: resolvedUpdates.movieSnapshot?.poster ?? movie.poster,
                 imdbRating:
                   resolvedUpdates.movieSnapshot?.imdbRating ?? movie.imdbRating,
-                runtime: resolvedUpdates.movieSnapshot?.runtime ?? movie.runtime,
+                runtime:
+                  resolvedUpdates.movieSnapshot?.runtime ?? movie.runtime,
               }
             : movie,
         ),
@@ -594,7 +632,11 @@ export default function MovieTrackerClient({
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button size="sm" className="shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30" onClick={redirectToAuth}>
+              <Button
+                size="sm"
+                className="shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30"
+                onClick={redirectToAuth}
+              >
                 <UserRound className="mr-1 size-3.5" />
                 Login to save
               </Button>
@@ -718,8 +760,13 @@ export default function MovieTrackerClient({
             ) : (
               <>
                 <WatchedSummary watched={watched} />
+                <WatchedFilterTabs
+                  activeTab={watchedFilterTab}
+                  counts={watchedCounts}
+                  onChange={setWatchedFilterTab}
+                />
                 <WatchedMoviesList
-                  watched={watched}
+                  watched={watchedSortedByRating}
                   pendingUpdateIds={pendingUpdateIds}
                   pendingDeleteIds={pendingDeleteIds}
                   onDeleteWatched={handleDeleteWatched}
@@ -731,6 +778,38 @@ export default function MovieTrackerClient({
         </Card>
       </section>
     </main>
+  );
+}
+
+function WatchedFilterTabs({
+  activeTab,
+  counts,
+  onChange,
+}: {
+  activeTab: WatchedFilterTab;
+  counts: Record<WatchedFilterTab, number>;
+  onChange: (tab: WatchedFilterTab) => void;
+}) {
+  const tabs: { id: WatchedFilterTab; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "top", label: "Loved" },
+    { id: "good", label: "Okay" },
+    { id: "pass", label: "Didn't Like" },
+  ];
+
+  return (
+    <div className="mb-3 flex flex-wrap gap-2">
+      {tabs.map((tab) => (
+        <Button
+          key={tab.id}
+          variant={activeTab === tab.id ? "default" : "outline"}
+          size="sm"
+          onClick={() => onChange(tab.id)}
+        >
+          {tab.label} ({counts[tab.id]})
+        </Button>
+      ))}
+    </div>
   );
 }
 
@@ -869,7 +948,7 @@ function MovieDetails({
 
   function handleSaveEditingWatched(): void {
     if (!watchedEntry) return;
-    const normalizedRating = Math.min(10, Math.max(1, Math.round(editRating)));
+    const normalizedRating = Math.min(5, Math.max(1, Math.round(editRating)));
     onUpdateWatched(watchedEntry.imdbID, {
       userRating: normalizedRating,
       comment: editComment.trim() || undefined,
@@ -883,9 +962,7 @@ function MovieDetails({
       <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
         <Poster src={movie.Poster} alt={`Poster of ${movie.Title}`} size="lg" />
         <div>
-          <h3 className="text-xl font-bold leading-tight">
-            {movie.Title}
-          </h3>
+          <h3 className="text-xl font-bold leading-tight">{movie.Title}</h3>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {isAvailableText(movie.Released) ? (
               <Badge variant="secondary">{movie.Released}</Badge>
@@ -977,7 +1054,11 @@ function MovieDetails({
                   onChange={(event) => setEditComment(event.target.value)}
                 />
                 <div className="flex gap-2">
-                  <Button size="sm" disabled={isUpdating} onClick={handleSaveEditingWatched}>
+                  <Button
+                    size="sm"
+                    disabled={isUpdating}
+                    onClick={handleSaveEditingWatched}
+                  >
                     <Save className="mr-1 size-3.5" />
                     {isUpdating ? "Saving..." : "Save"}
                   </Button>
@@ -1015,9 +1096,11 @@ function MovieDetails({
 }
 
 function WatchedSummary({ watched }: { watched: WatchedMovie[] }) {
-  const { likedAvgImdbRating, likedMinImdbRating, totalRuntime } = useMemo(() => {
-      // 5-star control maps to a 10-point scale, so 4+ stars means >= 8.
-      const likedMovies = watched.filter((movie) => movie.userRating >= 8);
+  const { likedAvgImdbRating, likedMinImdbRating, totalRuntime } =
+    useMemo(() => {
+      const likedMovies = watched.filter(
+        (movie) => movie.userRating >= LIKED_STAR_THRESHOLD,
+      );
       const likedImdbRatings = likedMovies
         .map((movie) => movie.imdbRating)
         .filter((rating) => rating > 0);
@@ -1037,11 +1120,11 @@ function WatchedSummary({ watched }: { watched: WatchedMovie[] }) {
     <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
       <Metric label="Movies" value={watched.length.toString()} />
       <Metric
-        label="Liked Avg IMDb"
+        label="Avg IMDb ratings"
         value={likedAvgImdbRating ? likedAvgImdbRating.toFixed(1) : "—"}
       />
       <Metric
-        label="Lowest IMDb You Liked"
+        label="Lowest IMDb ratings"
         value={likedMinImdbRating ? likedMinImdbRating.toFixed(1) : "—"}
       />
       <Metric label="Total Runtime" value={`${totalRuntime}m`} />
@@ -1049,13 +1132,7 @@ function WatchedSummary({ watched }: { watched: WatchedMovie[] }) {
   );
 }
 
-function Metric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border bg-secondary/45 p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1152,7 +1229,7 @@ function WatchedMovieItem({
   }
 
   function handleSaveEditing(): void {
-    const normalizedRating = Math.min(10, Math.max(1, Math.round(draftRating)));
+    const normalizedRating = Math.min(5, Math.max(1, Math.round(draftRating)));
 
     onUpdateWatched(movie.imdbID, {
       userRating: normalizedRating,
@@ -1173,7 +1250,9 @@ function WatchedMovieItem({
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{movie.title}</p>
-          <p className="text-xs text-muted-foreground">{summaryParts.join(" • ")}</p>
+          <p className="text-xs text-muted-foreground">
+            {summaryParts.join(" • ")}
+          </p>
           {!isEditing && movie.comment ? (
             <p className="comment-preview mt-1 text-xs italic text-muted-foreground">
               “{movie.comment}”

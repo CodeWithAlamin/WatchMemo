@@ -10,7 +10,6 @@ interface RatingStarsProps {
   message?: string[];
   defaultRating?: number;
   rating?: number;
-  valueScale?: number;
   onSetRating?: (rating: number) => void;
 }
 
@@ -38,29 +37,23 @@ export default function RatingStars({
   message = [],
   defaultRating = 0,
   rating: controlledRating,
-  valueScale = 2,
   onSetRating,
 }: RatingStarsProps) {
   const [uncontrolledRating, setUncontrolledRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
   const ratingValue = controlledRating ?? uncontrolledRating;
-  const selectedStars = Math.min(
-    maxRating,
-    Math.max(0, Math.round(ratingValue / valueScale)),
-  );
+  const selectedStars = Math.min(maxRating, Math.max(0, Math.round(ratingValue)));
   const activeStars = tempRating || selectedStars;
-  const activeValue = activeStars * valueScale;
   const displayColor =
-    activeValue <= 4 ? "#ef4444" : activeValue <= 7 ? "#f59e0b" : "#22c55e";
+    activeStars <= 2 ? "#ef4444" : activeStars <= 3 ? "#f59e0b" : "#22c55e";
   const iconSize = Math.max(size + 6, 26);
   const hitSize = Math.max(iconSize + 18, 48);
 
   function handleRating(nextRating: number): void {
-    const nextValue = nextRating * valueScale;
     if (controlledRating === undefined) {
-      setUncontrolledRating(nextValue);
+      setUncontrolledRating(nextRating);
     }
-    onSetRating?.(nextValue);
+    onSetRating?.(nextRating);
   }
 
   return (
