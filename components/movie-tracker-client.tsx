@@ -85,6 +85,7 @@ function mapRowToWatchedMovie(row: WatchedMovieRow): WatchedMovie {
     runtime: Number(snapshot.runtime || 0),
     userRating: Number(row.user_rating || 0),
     comment: row.comment ?? undefined,
+    updatedAt: row.updated_at,
   };
 }
 
@@ -164,6 +165,9 @@ export default function MovieTrackerClient({
     });
 
     return filtered.sort((a, b) => {
+      const aUpdated = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+      const bUpdated = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+      if (bUpdated !== aUpdated) return bUpdated - aUpdated;
       if (b.userRating !== a.userRating) return b.userRating - a.userRating;
       if (b.imdbRating !== a.imdbRating) return b.imdbRating - a.imdbRating;
       return a.title.localeCompare(b.title);
@@ -408,12 +412,14 @@ export default function MovieTrackerClient({
       setSyncError("");
       const previousWatched = watched;
       setPendingAddId(movie.imdbID);
+      const nowIso = new Date().toISOString();
       setWatched((current) => {
         const exists = current.some((item) => item.imdbID === movie.imdbID);
-        if (!exists) return [movie, ...current];
+        const nextMovie = { ...movie, updatedAt: nowIso };
+        if (!exists) return [nextMovie, ...current];
 
         return current.map((item) =>
-          item.imdbID === movie.imdbID ? movie : item,
+          item.imdbID === movie.imdbID ? nextMovie : item,
         );
       });
 
@@ -504,6 +510,7 @@ export default function MovieTrackerClient({
       setSyncError("");
       const previousWatched = watched;
       setPendingUpdateIds((currentIds) => [...currentIds, id]);
+      const nowIso = new Date().toISOString();
       const latestSnapshot =
         updates.movieSnapshot ?? (await fetchLatestMovieSnapshot(id));
       const resolvedUpdates = {
@@ -525,6 +532,7 @@ export default function MovieTrackerClient({
                   resolvedUpdates.movieSnapshot?.imdbRating ?? movie.imdbRating,
                 runtime:
                   resolvedUpdates.movieSnapshot?.runtime ?? movie.runtime,
+                updatedAt: nowIso,
               }
             : movie,
         ),

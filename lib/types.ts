@@ -31,4 +31,5 @@ export interface WatchedMovie {
   runtime: number;
   userRating: number;
   comment?: string;
+  updatedAt?: string;
 }
