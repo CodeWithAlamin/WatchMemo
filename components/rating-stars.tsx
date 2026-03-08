@@ -10,6 +10,7 @@ interface RatingStarsProps {
   message?: string[];
   defaultRating?: number;
   rating?: number;
+  valueScale?: number;
   onSetRating?: (rating: number) => void;
 }
 
@@ -25,6 +26,8 @@ interface StarProps {
   index: number;
   currentRating: number;
   maxRating: number;
+  hitSize: number;
+  isFirst: boolean;
 }
 
 export default function RatingStars({
@@ -35,54 +38,74 @@ export default function RatingStars({
   message = [],
   defaultRating = 0,
   rating: controlledRating,
+  valueScale = 2,
   onSetRating,
 }: RatingStarsProps) {
   const [uncontrolledRating, setUncontrolledRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
-  const rating = controlledRating ?? uncontrolledRating;
-  const activeRating = tempRating || rating;
+  const ratingValue = controlledRating ?? uncontrolledRating;
+  const selectedStars = Math.min(
+    maxRating,
+    Math.max(0, Math.round(ratingValue / valueScale)),
+  );
+  const activeStars = tempRating || selectedStars;
+  const activeValue = activeStars * valueScale;
+  const displayColor =
+    activeValue <= 4 ? "#ef4444" : activeValue <= 7 ? "#f59e0b" : "#22c55e";
+  const iconSize = Math.max(size + 6, 26);
+  const hitSize = Math.max(iconSize + 18, 48);
 
   function handleRating(nextRating: number): void {
+    const nextValue = nextRating * valueScale;
     if (controlledRating === undefined) {
-      setUncontrolledRating(nextRating);
+      setUncontrolledRating(nextValue);
     }
-    onSetRating?.(nextRating);
+    onSetRating?.(nextValue);
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="inline-flex rounded-xl border bg-background/80 p-1.5 shadow-sm">
+    <div className={`space-y-1.5 ${className}`}>
+      <div
+        role="radiogroup"
+        aria-label="Rate this movie"
+        className="flex w-full items-center justify-between overflow-hidden rounded-xl border border-border/80 bg-background/85"
+        style={activeStars > 0 ? { borderColor: `${displayColor}88` } : undefined}
+      >
         {Array.from({ length: maxRating }, (_, index) => (
           <Star
             key={index}
-            full={tempRating ? tempRating >= index + 1 : rating >= index + 1}
+            full={activeStars >= index + 1}
             onRate={() => handleRating(index + 1)}
             onArrowLeft={() =>
-              handleRating(Math.max(1, (activeRating || 1) - 1))
+              handleRating(Math.max(1, (activeStars || 1) - 1))
             }
             onArrowRight={() =>
-              handleRating(Math.min(maxRating, (activeRating || 0) + 1))
+              handleRating(Math.min(maxRating, (activeStars || 0) + 1))
             }
             onHoverIn={() => setTempRating(index + 1)}
             onHoverOut={() => setTempRating(0)}
-            color={color}
-            size={size}
+            color={activeStars > 0 ? displayColor : color}
+            size={iconSize}
             index={index + 1}
-            currentRating={activeRating}
+            currentRating={activeStars}
             maxRating={maxRating}
+            hitSize={hitSize}
+            isFirst={index === 0}
           />
         ))}
-        </div>
-
-        <p className="text-sm font-semibold" style={{ color }}>
-          {message.length === maxRating
-            ? message[Math.max(0, activeRating - 1)] || "Choose a rating"
-            : activeRating
-              ? `${activeRating}/${maxRating}`
-              : `Pick a score (1-${maxRating})`}
-        </p>
       </div>
+      <p
+        className={`min-h-5 text-sm font-semibold leading-none ${
+          activeStars > 0 ? "" : "invisible"
+        }`}
+        style={{ color: displayColor }}
+      >
+        {activeStars > 0
+          ? message.length === maxRating
+            ? `${message[Math.max(0, activeStars - 1)]} (${activeStars}/${maxRating})`
+            : `${activeStars}/${maxRating}`
+          : "placeholder"}
+      </p>
     </div>
   );
 }
@@ -99,7 +122,17 @@ function Star({
   index,
   currentRating,
   maxRating,
+  hitSize,
+  isFirst,
 }: StarProps) {
+  const isActive = currentRating >= index;
+  const activeStyles = isActive
+    ? {
+        borderColor: color,
+        backgroundColor: `${color}22`,
+      }
+    : undefined;
+
   return (
     <button
       type="button"
@@ -118,8 +151,22 @@ function Star({
           onArrowRight();
         }
       }}
-      className="inline-flex cursor-pointer rounded-md p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70"
-      style={{ width: size + 2, height: size + 2 }}
+      role="radio"
+      aria-checked={currentRating === index}
+      className={`inline-flex cursor-pointer items-center justify-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 ${
+        isFirst ? "" : "border-l border-l-border/80"
+      } ${
+        isActive
+          ? "shadow-sm"
+          : "bg-transparent hover:bg-secondary/45"
+      }`}
+      style={{
+        width: hitSize,
+        height: hitSize,
+        minWidth: hitSize,
+        flex: 1,
+        ...activeStyles,
+      }}
       aria-label={`Rate ${index} out of ${maxRating}`}
       aria-pressed={currentRating === index}
     >
@@ -129,6 +176,8 @@ function Star({
           viewBox="0 0 20 20"
           fill={color}
           stroke={color}
+          width={size}
+          height={size}
         >
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
@@ -138,6 +187,8 @@ function Star({
           fill="none"
           viewBox="0 0 24 24"
           stroke={color}
+          width={size}
+          height={size}
         >
           <path
             strokeLinecap="round"

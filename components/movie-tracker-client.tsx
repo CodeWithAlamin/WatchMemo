@@ -8,14 +8,10 @@ import {
   Clapperboard,
   Clock3,
   Film,
-  Frown,
-  Laugh,
   LogOut,
-  Meh,
   Settings,
   Pencil,
   Save,
-  Smile,
   Sparkles,
   Star,
   UserRound,
@@ -106,44 +102,23 @@ function buildSnapshotFromMovieDetails(movie: OmdbMovieDetails): MovieSnapshot {
   };
 }
 
+function formatFiveStarLabel(scoreOutOfTen: number): string {
+  const stars = Math.max(0, Math.min(5, Math.round(scoreOutOfTen / 2)));
+  return `${stars}/5`;
+}
+
 const isAvailableText = (value?: string | null): value is string =>
   Boolean(value && value.trim() !== "" && value !== "N/A");
 
 const isAuthSessionMissingError = (message: string): boolean =>
   message.toLowerCase().includes("auth session missing");
-
-type RatingTier = {
-  label: "Bad" | "Okay" | "Good" | "Great";
-  min: number;
-  max: number;
-};
-
-const RATING_TIERS: RatingTier[] = [
-  { label: "Bad", min: 1, max: 3 },
-  { label: "Okay", min: 4, max: 5 },
-  { label: "Good", min: 6, max: 7 },
-  { label: "Great", min: 8, max: 10 },
-];
 const RATING_MESSAGES = [
-  "1 · Very bad",
-  "2 · Not good",
-  "3 · Weak watch",
-  "4 · Below average",
-  "5 · Fine",
-  "6 · Decent",
-  "7 · Good",
-  "8 · Great",
-  "9 · Excellent",
-  "10 · Masterpiece",
+  "Very bad",
+  "Not good",
+  "Fine",
+  "Good",
+  "Excellent",
 ];
-
-function getRatingTierLabel(rating: number): RatingTier["label"] | null {
-  if (rating <= 0) return null;
-  return (
-    RATING_TIERS.find((tier) => rating >= tier.min && rating <= tier.max)?.label ??
-    null
-  );
-}
 
 export default function MovieTrackerClient({
   initialQuery,
@@ -940,13 +915,12 @@ function MovieDetails({
               </p>
             </div>
             <RatingStars
-              maxRating={10}
+              maxRating={5}
               size={22}
               message={RATING_MESSAGES}
               onSetRating={setUserRating}
               className="pt-1"
             />
-            <RatingScaleLegend rating={userRating} />
             <textarea
               className="mt-3 min-h-20 w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none ring-ring/50 transition placeholder:text-muted-foreground focus-visible:ring-2"
               placeholder="Optional note: what stood out, what you loved, or what missed."
@@ -968,7 +942,7 @@ function MovieDetails({
         ) : (
           <div className="space-y-2">
             <p className="text-sm font-semibold text-muted-foreground">
-              You rated this movie {watchedUserRating} / 10
+              You rated this movie {formatFiveStarLabel(watchedUserRating ?? 0)}
             </p>
             {!isEditingWatched ? (
               <>
@@ -990,13 +964,12 @@ function MovieDetails({
             ) : (
               <>
                 <RatingStars
-                  maxRating={10}
+                  maxRating={5}
                   size={22}
                   message={RATING_MESSAGES}
                   rating={editRating}
                   onSetRating={setEditRating}
                 />
-                <RatingScaleLegend rating={editRating} />
                 <textarea
                   className="mt-1 min-h-20 w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none ring-ring/50 transition placeholder:text-muted-foreground focus-visible:ring-2"
                   placeholder="Update your note..."
@@ -1043,6 +1016,7 @@ function MovieDetails({
 
 function WatchedSummary({ watched }: { watched: WatchedMovie[] }) {
   const { likedAvgImdbRating, likedMinImdbRating, totalRuntime } = useMemo(() => {
+      // 5-star control maps to a 10-point scale, so 4+ stars means >= 8.
       const likedMovies = watched.filter((movie) => movie.userRating >= 8);
       const likedImdbRatings = likedMovies
         .map((movie) => movie.imdbRating)
@@ -1189,7 +1163,7 @@ function WatchedMovieItem({
 
   const summaryParts: string[] = [];
   if (movie.imdbRating > 0) summaryParts.push(`IMDb ${movie.imdbRating}`);
-  summaryParts.push(`You ${movie.userRating}`);
+  summaryParts.push(`You ${formatFiveStarLabel(movie.userRating)}`);
   if (movie.runtime > 0) summaryParts.push(`${movie.runtime}m`);
 
   return (
@@ -1234,13 +1208,12 @@ function WatchedMovieItem({
       {isEditing ? (
         <div className="mt-3 rounded-xl border bg-muted/40 p-3">
           <RatingStars
-            maxRating={10}
+            maxRating={5}
             size={20}
             message={RATING_MESSAGES}
             rating={draftRating}
             onSetRating={setDraftRating}
           />
-          <RatingScaleLegend rating={draftRating} compact />
           <textarea
             className="mt-3 min-h-20 w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none ring-ring/50 transition placeholder:text-muted-foreground focus-visible:ring-2"
             placeholder="Update your note..."
@@ -1358,58 +1331,6 @@ function MovieDetailsSkeleton() {
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
       <Skeleton className="h-4 w-3/5" />
-    </div>
-  );
-}
-
-function RatingScaleLegend({
-  rating,
-  compact = false,
-}: {
-  rating: number;
-  compact?: boolean;
-}) {
-  const currentLabel = getRatingTierLabel(rating);
-
-  return (
-    <div className={compact ? "mt-2" : "mt-3"}>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {RATING_TIERS.map((tier) => {
-          const active = currentLabel === tier.label;
-          const Icon =
-            tier.label === "Bad"
-              ? Frown
-              : tier.label === "Okay"
-                ? Meh
-                : tier.label === "Good"
-                  ? Smile
-                  : Laugh;
-
-          return (
-            <div
-              key={tier.label}
-              className={`rounded-xl border px-2.5 py-2 text-[11px] font-semibold transition-colors ${
-                active
-                  ? "border-primary/50 bg-primary/15 text-primary shadow-sm"
-                  : "border-border bg-background/80 text-muted-foreground"
-              }`}
-            >
-              <div className="flex items-center gap-1.5">
-                <Icon className="size-3.5" />
-                <span>{tier.label}</span>
-              </div>
-              <p className="mt-0.5 text-[10px] font-medium opacity-85">
-                {tier.min}-{tier.max}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-      {rating > 0 ? (
-        <p className="mt-1 text-xs font-medium text-muted-foreground">
-          Selected: {currentLabel} feeling ({rating}/10)
-        </p>
-      ) : null}
     </div>
   );
 }
