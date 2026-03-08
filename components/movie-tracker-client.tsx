@@ -69,6 +69,7 @@ type WatchedMovieRow = {
   } | null;
   updated_at: string;
 };
+type MovieSnapshot = NonNullable<WatchedMovieRow["movie_snapshot"]>;
 
 const average = (values: number[]): number => {
   if (!values.length) return 0;
@@ -87,6 +88,21 @@ function mapRowToWatchedMovie(row: WatchedMovieRow): WatchedMovie {
     runtime: Number(snapshot.runtime || 0),
     userRating: Number(row.user_rating || 0),
     comment: row.comment ?? undefined,
+  };
+}
+
+function parseRuntimeMinutes(runtime: string): number {
+  const runtimeMinutes = Number(runtime.split(" ").at(0));
+  return Number.isNaN(runtimeMinutes) ? 0 : runtimeMinutes;
+}
+
+function buildSnapshotFromMovieDetails(movie: OmdbMovieDetails): MovieSnapshot {
+  return {
+    title: movie.Title,
+    year: movie.Year,
+    poster: movie.Poster,
+    imdbRating: Number(movie.imdbRating),
+    runtime: parseRuntimeMinutes(movie.Runtime),
   };
 }
 
@@ -238,6 +254,56 @@ export default function MovieTrackerClient({
     void fetchWatched(authUser.id);
   }, [authLoading, authUser, fetchWatched]);
 
+  useEffect(() => {
+    if (!authUser || !selectedMovie) return;
+
+    const watchedEntry = watched.find((movie) => movie.imdbID === selectedMovie.imdbID);
+    if (!watchedEntry) return;
+
+    const snapshot = buildSnapshotFromMovieDetails(selectedMovie);
+    const needsRefresh =
+      watchedEntry.title !== (snapshot.title ?? watchedEntry.title) ||
+      watchedEntry.year !== (snapshot.year ?? watchedEntry.year) ||
+      watchedEntry.poster !== (snapshot.poster ?? watchedEntry.poster) ||
+      watchedEntry.imdbRating !== Number(snapshot.imdbRating ?? watchedEntry.imdbRating) ||
+      watchedEntry.runtime !== Number(snapshot.runtime ?? watchedEntry.runtime);
+
+    if (!needsRefresh) return;
+
+    void (async () => {
+      const previousWatched = watched;
+
+      setWatched((current) =>
+        current.map((movie) =>
+          movie.imdbID === selectedMovie.imdbID
+            ? {
+                ...movie,
+                title: snapshot.title ?? movie.title,
+                year: snapshot.year ?? movie.year,
+                poster: snapshot.poster ?? movie.poster,
+                imdbRating: Number(snapshot.imdbRating ?? movie.imdbRating),
+                runtime: Number(snapshot.runtime ?? movie.runtime),
+              }
+            : movie,
+        ),
+      );
+
+      const { error } = await supabase
+        .from("watched_movies")
+        .update({ movie_snapshot: snapshot })
+        .eq("user_id", authUser.id)
+        .eq("imdb_id", selectedMovie.imdbID);
+
+      if (!error) return;
+      if (isAuthSessionMissingError(error.message)) {
+        setWatched(previousWatched);
+        return;
+      }
+      setWatched(previousWatched);
+      setSyncError(error.message);
+    })();
+  }, [authUser, selectedMovie, watched]);
+
   const updateSearchParams = useCallback(
     (updater: (params: URLSearchParams) => void): void => {
       const params = new URLSearchParams(searchParams.toString());
@@ -387,7 +453,9 @@ export default function MovieTrackerClient({
 
   function handleUpdateWatched(
     id: string,
-    updates: Pick<WatchedMovie, "userRating" | "comment">,
+    updates: Pick<WatchedMovie, "userRating" | "comment"> & {
+      movieSnapshot?: MovieSnapshot;
+    },
   ): void {
     if (!authUser) {
       redirectToAuth();
@@ -408,6 +476,11 @@ export default function MovieTrackerClient({
                 ...movie,
                 userRating: updates.userRating,
                 comment: updates.comment,
+                title: updates.movieSnapshot?.title ?? movie.title,
+                year: updates.movieSnapshot?.year ?? movie.year,
+                poster: updates.movieSnapshot?.poster ?? movie.poster,
+                imdbRating: updates.movieSnapshot?.imdbRating ?? movie.imdbRating,
+                runtime: updates.movieSnapshot?.runtime ?? movie.runtime,
               }
             : movie,
         ),
@@ -418,6 +491,9 @@ export default function MovieTrackerClient({
         .update({
           user_rating: updates.userRating,
           comment: updates.comment ?? null,
+          ...(updates.movieSnapshot
+            ? { movie_snapshot: updates.movieSnapshot }
+            : {}),
         })
         .eq("user_id", authUser.id)
         .eq("imdb_id", id);
@@ -474,7 +550,7 @@ export default function MovieTrackerClient({
             {authLoading ? (
               <Skeleton className="size-10 rounded-full" />
             ) : authUser ? (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
@@ -723,7 +799,9 @@ function MovieDetails({
   onAddWatched: (movie: WatchedMovie) => void;
   onUpdateWatched: (
     id: string,
-    updates: Pick<WatchedMovie, "userRating" | "comment">,
+    updates: Pick<WatchedMovie, "userRating" | "comment"> & {
+      movieSnapshot?: MovieSnapshot;
+    },
   ) => void;
   onRequireAuth: () => void;
 }) {
@@ -752,15 +830,13 @@ function MovieDetails({
   function handleAdd(): void {
     if (userRating <= 0) return;
 
-    const runtimeMinutes = Number(movie.Runtime.split(" ").at(0));
-
     const watchedMovie: WatchedMovie = {
       imdbID: movie.imdbID,
       title: movie.Title,
       year: movie.Year,
       poster: movie.Poster,
       imdbRating: Number(movie.imdbRating),
-      runtime: Number.isNaN(runtimeMinutes) ? 0 : runtimeMinutes,
+      runtime: parseRuntimeMinutes(movie.Runtime),
       userRating,
       comment: comment.trim() || undefined,
     };
@@ -789,6 +865,7 @@ function MovieDetails({
     onUpdateWatched(watchedEntry.imdbID, {
       userRating: normalizedRating,
       comment: editComment.trim() || undefined,
+      movieSnapshot: buildSnapshotFromMovieDetails(movie),
     });
     setIsEditingWatched(false);
   }
@@ -995,7 +1072,9 @@ function WatchedMoviesList({
   onDeleteWatched: (id: string) => void;
   onUpdateWatched: (
     id: string,
-    updates: Pick<WatchedMovie, "userRating" | "comment">,
+    updates: Pick<WatchedMovie, "userRating" | "comment"> & {
+      movieSnapshot?: MovieSnapshot;
+    },
   ) => void;
 }) {
   if (!watched.length) {
@@ -1038,7 +1117,9 @@ function WatchedMovieItem({
   onDeleteWatched: (id: string) => void;
   onUpdateWatched: (
     id: string,
-    updates: Pick<WatchedMovie, "userRating" | "comment">,
+    updates: Pick<WatchedMovie, "userRating" | "comment"> & {
+      movieSnapshot?: MovieSnapshot;
+    },
   ) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);

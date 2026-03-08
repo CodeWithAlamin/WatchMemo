@@ -38,6 +38,12 @@
   --ring: oklch(0.63 0.17 63);
 }
 
+html {
+  /* Prevent layout shift when vertical scrollbar appears/disappears */
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -50,6 +56,32 @@
       linear-gradient(180deg, #fffdf5 0%, #f8fafc 55%, #eef2ff 100%);
     min-height: 100vh;
   }
+}
+
+/* Minimal branded scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.63 0.17 63 / 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, oklch(0.63 0.17 63) 45%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, oklch(0.63 0.17 63) 62%, transparent);
 }
 
 .comment-preview {

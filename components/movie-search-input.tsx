@@ -8,7 +8,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { Search } from "lucide-react";
+import { LoaderCircle, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -97,15 +97,20 @@ export default function MovieSearchInput({
         />
         <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
           <Button size="sm" className="h-8 rounded-xl px-3" disabled={isPending}>
-            {isPending ? "Searching..." : "Search"}
+            {isPending ? (
+              <>
+                <LoaderCircle className="mr-1 size-3.5 motion-safe:animate-spin" />
+                Searching...
+              </>
+            ) : (
+              <>
+                <Search className="mr-1 size-3.5" />
+                Search
+              </>
+            )}
           </Button>
         </div>
       </form>
-      {isPending ? (
-        <p className="mt-1 text-right text-xs font-medium text-muted-foreground">
-          Finding matches...
-        </p>
-      ) : null}
     </div>
   );
 }
