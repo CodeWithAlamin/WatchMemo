@@ -1,4 +1,4 @@
-import UsePopcornClient from "@/components/use-popcorn-client";
+import MovieTrackerClient from "@/components/movie-tracker-client";
 import { getMovieDetails, searchMovies } from "@/lib/omdb";
 import type { SearchParams } from "@/lib/types";
 
@@ -24,7 +24,7 @@ export default async function Page({
     ]);
 
     return (
-      <UsePopcornClient
+      <MovieTrackerClient
         initialQuery={query}
         movies={movies}
         selectedMovie={selectedMovie}
@@ -36,7 +36,7 @@ export default async function Page({
       error instanceof Error ? error.message : "Failed to fetch movies.";
 
     return (
-      <UsePopcornClient
+      <MovieTrackerClient
         initialQuery={query}
         movies={[]}
         selectedMovie={null}

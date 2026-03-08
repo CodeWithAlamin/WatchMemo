@@ -2,12 +2,12 @@
 
 # WatchMemo
 
-A personal movie watch-history tracker built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
+A personal movie watch-history tracker built with **Next.js 15**, **React 19**, **TypeScript**, **Tailwind CSS v4**, and **Supabase**.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?style=flat&logo=nextdotjs)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.7-black?style=flat&logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.1-149eca?style=flat&logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.x-0ea5e9?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3ecf8e?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
 
 </div>
 
@@ -15,53 +15,44 @@ A personal movie watch-history tracker built with **Next.js 15**, **React 19**, 
 
 ## What WatchMemo Is
 
-WatchMemo is a personal store for your watched-movie history.
+WatchMemo is your private movie memory system.
 
-- Search movies from OMDb
-- Save ratings and personal notes
-- Revisit, edit, and maintain your viewing history over time
-
----
-
-## SEO & Metadata
-
-This project includes modern Next.js SEO defaults:
-
-- Canonical URL support via `NEXT_PUBLIC_SITE_URL`
-- Open Graph metadata (social previews)
-- Twitter card metadata
-- `robots.ts` for crawl rules
-- `sitemap.ts` generation
-- `manifest.ts` for installable app metadata
-
-Set your production domain in `.env.local`:
-
-```bash
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
-```
+- Discover films via OMDb search
+- Public browsing without account required
+- Keep your watched history with ratings
+- Add personal notes/comments per movie
+- Edit ratings/comments later anytime
 
 ---
 
-## Features
+## Core Features
 
-### Discovery & Data
-- Server-side movie search/details via **OMDb API**
-- URL-driven state (`?q=...&selected=...`)
-- Debounced search input
-- Server-side deduplication for duplicate OMDb results
+### Authentication (Supabase Auth)
+- Dedicated routes: sign-in, sign-up, forgot-password, update-password
+- Email/password sign-up
+- Email/password sign-in
+- Display name set during sign-up
+- Password recovery via email reset link
+- Sign-out support
+- Session-aware UI
+- Read-only public mode for guests
 
-### Watch Tracking
-- Save watched movies with ratings
-- Add optional personal comments
-- Edit existing ratings/comments inline (no delete/re-add)
-- Remove watched entries
-- Persist watch history in localStorage
+### Watch History (Supabase Postgres)
+- Per-user watched records
+- Row Level Security (RLS) for data isolation
+- Insert/update/delete watched entries
+- Inline editing from watched list and details panel
 
-### UX & UI
-- Sticky search/header area
+### App UX
+- Sticky search header
 - Mobile panel navigation (`Discover` / `Watched`)
-- Dedicated details view flow on mobile
-- Tailwind v4 + shadcn-style UI primitives
+- URL state for search/details (`?q=...&selected=...`)
+
+### SEO (Next.js metadata)
+- Canonical + metadata base
+- Open Graph + Twitter metadata
+- `robots.ts`, `sitemap.ts`, `manifest.ts`
+- JSON-LD WebSite schema
 
 ---
 
@@ -69,8 +60,8 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
 - **Framework:** Next.js App Router (v15)
 - **Language:** TypeScript
-- **UI:** Tailwind CSS v4 + shadcn-style primitives
-- **Icons:** lucide-react
+- **Styling:** Tailwind CSS v4 + shadcn-style primitives
+- **Backend:** Supabase (Auth + Postgres)
 - **Linting:** ESLint CLI
 
 ---
@@ -79,6 +70,13 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
 ```text
 app/
+  auth/
+    forgot-password/
+    layout.tsx
+    page.tsx
+    sign-in/
+    sign-up/
+    update-password/
   error.tsx
   globals.css
   layout.tsx
@@ -87,46 +85,84 @@ app/
   page.tsx
   robots.ts
   sitemap.ts
+  profile/
 
 components/
   hooks/
   ui/
-  search-input.tsx
-  star-rating.tsx
-  use-popcorn-client.tsx
+  movie-search-input.tsx
+  rating-stars.tsx
+  movie-tracker-client.tsx
 
 lib/
+  auth/
   omdb.ts
+  supabase/
+    client.ts
   types.ts
   utils.ts
+
+supabase/
+  schema.sql
 ```
 
 ---
 
-## Quick Start
+## Environment Variables
 
-### 1. Clone
-
-```bash
-git clone https://github.com/CodeWithAlamin/usePopcorn.git
-cd usePopcorn
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env.local
-```
-
-Then set values in `.env.local`:
+Create `.env.local`:
 
 ```bash
 OMDB_API_KEY=your_omdb_api_key_here
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 3. Install & Run
+---
 
+## Supabase Setup (A to Z)
+
+### 1. Create project
+- Go to Supabase dashboard
+- Create a new project
+- Copy:
+  - `Project URL` -> `NEXT_PUBLIC_SUPABASE_URL`
+  - `anon public key` -> `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### 2. Configure authentication
+- Supabase Dashboard -> **Authentication** -> **Providers**
+- Enable **Email** provider
+- Keep email+password sign-in enabled
+- Optional: disable email confirmation for faster local testing
+- Add URL to allow redirect after reset:
+  - **Authentication -> URL Configuration -> Redirect URLs**
+  - Add: `https://your-domain.com/auth/update-password`
+  - Add local: `http://localhost:3000/auth/update-password`
+
+### 3. Create database table + policies
+- Open Supabase SQL Editor
+- Run the SQL in:
+  - [`supabase/schema.sql`](./supabase/schema.sql)
+
+This creates:
+- Table: `public.watched_movies`
+- Trigger for `updated_at`
+- Indexes
+- RLS policies (user can only access own rows)
+
+### 4. (Optional) Verify table columns
+The app expects these columns in `public.watched_movies`:
+- `id` (uuid, primary key)
+- `user_id` (uuid, references `auth.users.id`)
+- `imdb_id` (text)
+- `user_rating` (int 1..10)
+- `comment` (text nullable)
+- `movie_snapshot` (jsonb, stores title/year/poster/imdbRating/runtime)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
+
+### 5. Run app
 ```bash
 npm install
 npm run dev
@@ -136,7 +172,7 @@ Open `http://localhost:3000`
 
 ---
 
-## Available Scripts
+## Scripts
 
 ```bash
 npm run dev      # Start development server
@@ -150,15 +186,17 @@ npm run start    # Start production server
 ## Releases
 
 - **`v1-legacy`**: Original Vite + React implementation
-- **`v2.0.0+`**: Next.js + TypeScript upgraded architecture
+- **`v2.0.0+`**: Next.js + TypeScript architecture line
 
 ---
 
 ## Notes
 
 - Search requires at least 3 characters.
-- Watched data is stored under localStorage key: `watched`.
-- If OMDb is unreachable or key is invalid, the UI surfaces API errors in-app.
+- Anyone can browse/search movies without signing in.
+- Sign-in is only required when saving/updating/removing watched items.
+- Watched history is stored in Supabase (not localStorage).
+- If Supabase env vars are missing, the app will throw a setup error.
 
 ---
 

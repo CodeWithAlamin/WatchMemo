@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-interface StarRatingProps {
+interface RatingStarsProps {
   maxRating?: number;
   color?: string;
   size?: number;
@@ -18,11 +18,16 @@ interface StarProps {
   full: boolean;
   onHoverIn: () => void;
   onHoverOut: () => void;
+  onArrowLeft: () => void;
+  onArrowRight: () => void;
   color: string;
   size: number;
+  index: number;
+  currentRating: number;
+  maxRating: number;
 }
 
-export default function StarRating({
+export default function RatingStars({
   maxRating = 5,
   color = "#f59e0b",
   size = 20,
@@ -31,10 +36,11 @@ export default function StarRating({
   defaultRating = 0,
   rating: controlledRating,
   onSetRating,
-}: StarRatingProps) {
+}: RatingStarsProps) {
   const [uncontrolledRating, setUncontrolledRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
   const rating = controlledRating ?? uncontrolledRating;
+  const activeRating = tempRating || rating;
 
   function handleRating(nextRating: number): void {
     if (controlledRating === undefined) {
@@ -44,26 +50,39 @@ export default function StarRating({
   }
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      <div className="flex">
+    <div className={`space-y-2 ${className}`}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-xl border bg-background/80 p-1.5 shadow-sm">
         {Array.from({ length: maxRating }, (_, index) => (
           <Star
             key={index}
             full={tempRating ? tempRating >= index + 1 : rating >= index + 1}
             onRate={() => handleRating(index + 1)}
+            onArrowLeft={() =>
+              handleRating(Math.max(1, (activeRating || 1) - 1))
+            }
+            onArrowRight={() =>
+              handleRating(Math.min(maxRating, (activeRating || 0) + 1))
+            }
             onHoverIn={() => setTempRating(index + 1)}
             onHoverOut={() => setTempRating(0)}
             color={color}
             size={size}
+            index={index + 1}
+            currentRating={activeRating}
+            maxRating={maxRating}
           />
         ))}
-      </div>
+        </div>
 
-      <p className="text-sm font-semibold" style={{ color }}>
-        {message.length === maxRating
-          ? message[tempRating ? tempRating - 1 : rating - 1]
-          : tempRating || rating || ""}
-      </p>
+        <p className="text-sm font-semibold" style={{ color }}>
+          {message.length === maxRating
+            ? message[Math.max(0, activeRating - 1)] || "Choose a rating"
+            : activeRating
+              ? `${activeRating}/${maxRating}`
+              : `Pick a score (1-${maxRating})`}
+        </p>
+      </div>
     </div>
   );
 }
@@ -73,8 +92,13 @@ function Star({
   full,
   onHoverIn,
   onHoverOut,
+  onArrowLeft,
+  onArrowRight,
   color,
   size,
+  index,
+  currentRating,
+  maxRating,
 }: StarProps) {
   return (
     <button
@@ -82,9 +106,22 @@ function Star({
       onClick={onRate}
       onMouseEnter={onHoverIn}
       onMouseLeave={onHoverOut}
-      className="inline-flex"
-      style={{ width: size, height: size }}
-      aria-label="Rate movie"
+      onFocus={onHoverIn}
+      onBlur={onHoverOut}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          onArrowLeft();
+        }
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          onArrowRight();
+        }
+      }}
+      className="inline-flex cursor-pointer rounded-md p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70"
+      style={{ width: size + 2, height: size + 2 }}
+      aria-label={`Rate ${index} out of ${maxRating}`}
+      aria-pressed={currentRating === index}
     >
       {full ? (
         <svg
