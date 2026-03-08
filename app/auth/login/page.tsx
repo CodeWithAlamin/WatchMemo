@@ -7,6 +7,22 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/auth/login",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: "Login | WatchMemo",
+    description: "Log in to your WatchMemo account.",
+    url: "/auth/login",
+    images: ["/thumbnail.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Login | WatchMemo",
+    description: "Log in to your WatchMemo account.",
+    images: ["/thumbnail.png"],
+  },
 };
 
 export default function LoginPage() {

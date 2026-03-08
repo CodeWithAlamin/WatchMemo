@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 type SubmitState = "idle" | "loading" | "error";
+type AuthUser = Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"];
 
 export default function SignInForm() {
   const router = useRouter();
@@ -32,10 +33,12 @@ export default function SignInForm() {
   useEffect(() => {
     let mounted = true;
 
-    void supabase.auth.getUser().then(({ data }) => {
+    void supabase.auth.getUser().then(
+      ({ data }: { data: { user: AuthUser } }) => {
       if (!mounted) return;
       if (data.user) router.replace(nextPath);
-    });
+      },
+    );
 
     return () => {
       mounted = false;
@@ -68,7 +71,7 @@ export default function SignInForm() {
           <CardTitle className="pb-1 text-2xl font-black tracking-tight">
             Welcome back
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="pb-3">
             Login to keep your watched movies, ratings, and notes synced.
           </CardDescription>
         </CardHeader>

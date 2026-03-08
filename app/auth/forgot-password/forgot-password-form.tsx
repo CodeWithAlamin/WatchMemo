@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
           <CardTitle className="text-2xl font-black tracking-tight">
             Reset your password
           </CardTitle>
-          <CardDescription className="pb-2">
+          <CardDescription className="pb-3">
             Enter your email and we will send you a secure reset link.
           </CardDescription>
         </CardHeader>

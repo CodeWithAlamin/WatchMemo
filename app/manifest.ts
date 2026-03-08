@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#f7f3e9",
     icons: [
       {
-        src: "/vite.svg",
-        sizes: "192x192",
+        src: "/watchmemo-logo-mark.svg",
+        sizes: "any",
         type: "image/svg+xml",
       },
     ],

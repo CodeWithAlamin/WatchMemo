@@ -11,6 +11,18 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  openGraph: {
+    title: "Profile | WatchMemo",
+    description: "Manage your WatchMemo profile settings.",
+    url: "/profile",
+    images: ["/thumbnail.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Profile | WatchMemo",
+    description: "Manage your WatchMemo profile settings.",
+    images: ["/thumbnail.png"],
+  },
 };
 
 export default function ProfilePage() {

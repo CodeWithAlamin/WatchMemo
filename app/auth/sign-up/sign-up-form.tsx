@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 type SubmitState = "idle" | "loading" | "error" | "success";
+type AuthUser = Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"];
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -38,10 +39,12 @@ export default function SignUpForm() {
   useEffect(() => {
     let mounted = true;
 
-    void supabase.auth.getUser().then(({ data }) => {
+    void supabase.auth.getUser().then(
+      ({ data }: { data: { user: AuthUser } }) => {
       if (!mounted) return;
       if (data.user) router.replace(nextPath);
-    });
+      },
+    );
 
     return () => {
       mounted = false;
@@ -105,7 +108,7 @@ export default function SignUpForm() {
           <CardTitle className="pb-1 text-2xl font-black tracking-tight">
             Create your account
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="pb-3">
             Build your private movie history with ratings and personal notes.
           </CardDescription>
         </CardHeader>

@@ -9,16 +9,27 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 const siteName = "WatchMemo";
 const siteDescription =
   "WatchMemo is your personal movie watch history tracker. Search films, rate what you watched, and keep private viewing notes for future reference.";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://watchmemo.vercel.app";
+const socialImage = "/thumbnail.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: siteName,
+  referrer: "origin-when-cross-origin",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   title: {
     default: siteName,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
+  authors: [{ name: "Alamin", url: "https://github.com/CodeWithAlamin" }],
+  creator: "CodeWithAlamin",
+  publisher: siteName,
   keywords: [
     "watch history",
     "movie tracker",
@@ -32,18 +43,20 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/vite.svg",
-    apple: "/vite.svg",
+    icon: [{ url: "/watchmemo-logo-mark.svg", type: "image/svg+xml" }],
+    shortcut: ["/watchmemo-logo-mark.svg"],
+    apple: "/watchmemo-logo-mark.svg",
   },
   openGraph: {
     type: "website",
+    locale: "en_US",
     url: "/",
     siteName,
     title: siteName,
     description: siteDescription,
     images: [
       {
-        url: "/preview-thumbnail.jpg",
+        url: socialImage,
         width: 1200,
         height: 630,
         alt: `${siteName} preview`,
@@ -52,9 +65,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    creator: "@CodeWithAlamin",
+    site: "@CodeWithAlamin",
     title: siteName,
     description: siteDescription,
-    images: ["/preview-thumbnail.jpg"],
+    images: [socialImage],
   },
   robots: {
     index: true,
@@ -79,25 +94,39 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  const websiteJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: siteName,
-    url: siteUrl,
-    description: siteDescription,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: siteName,
+      url: siteUrl,
+      logo: `${siteUrl}/watchmemo-logo-mark.svg`,
+      sameAs: [
+        "https://github.com/CodeWithAlamin",
+        "https://x.com/CodeWithAlamin",
+        "https://linkedin.com/in/codewithalamin",
+      ],
     },
-  };
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: siteName,
+      url: siteUrl,
+      description: siteDescription,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ];
 
   return (
     <html lang="en">
       <body className={jakarta.className}>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <div className="flex min-h-screen flex-col">
           <main className="flex-1">{children}</main>

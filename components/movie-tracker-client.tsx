@@ -458,9 +458,14 @@ export default function MovieTrackerClient({
         <div className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                WatchMemo
-              </h1>
+              <Image
+                src="/watchmemo-logo-wordmark.svg"
+                alt="WatchMemo"
+                width={230}
+                height={48}
+                priority
+                className="h-9 w-auto sm:h-10"
+              />
               <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                 Your personal movie memory vault
               </p>
