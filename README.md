@@ -1,8 +1,8 @@
 <div align="center">
 
-# CineScope
+# WatchLog
 
-A modern movie discovery and watch-tracking app built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
+A personal movie watch-history tracker built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?style=flat&logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.1-149eca?style=flat&logo=react&logoColor=white)](https://react.dev/)
@@ -13,12 +13,32 @@ A modern movie discovery and watch-tracking app built with **Next.js 15**, **Rea
 
 ---
 
-## Why This Version
+## What WatchLog Is
 
-This is the upgraded version of the original `usePopcorn` project.
+WatchLog is a personal store for your watched-movie history.
 
-- Legacy reference is preserved as release/tag: **`v1-legacy`**
-- Current codebase is the new architecture line: **`v2.0.0+`**
+- Search movies from OMDb
+- Save ratings and personal notes
+- Revisit, edit, and maintain your viewing history over time
+
+---
+
+## SEO & Metadata
+
+This project includes modern Next.js SEO defaults:
+
+- Canonical URL support via `NEXT_PUBLIC_SITE_URL`
+- Open Graph metadata (social previews)
+- Twitter card metadata
+- `robots.ts` for crawl rules
+- `sitemap.ts` generation
+- `manifest.ts` for installable app metadata
+
+Set your production domain in `.env.local`:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
 
 ---
 
@@ -26,22 +46,22 @@ This is the upgraded version of the original `usePopcorn` project.
 
 ### Discovery & Data
 - Server-side movie search/details via **OMDb API**
-- URL-driven state for sharable views (`?q=...&selected=...`)
+- URL-driven state (`?q=...&selected=...`)
 - Debounced search input
-- Server-side deduplication of duplicate OMDb results (`imdbID`)
+- Server-side deduplication for duplicate OMDb results
 
 ### Watch Tracking
-- Save watched movies with your rating
+- Save watched movies with ratings
 - Add optional personal comments
-- Edit existing watched ratings/comments (no delete/re-add required)
+- Edit existing ratings/comments inline (no delete/re-add)
 - Remove watched entries
-- Persistent watched list via localStorage
+- Persist watch history in localStorage
 
 ### UX & UI
 - Sticky search/header area
 - Mobile panel navigation (`Discover` / `Watched`)
-- Full movie details flow optimized for mobile
-- Tailwind v4 + shadcn-style component architecture
+- Dedicated details view flow on mobile
+- Tailwind v4 + shadcn-style UI primitives
 
 ---
 
@@ -63,7 +83,10 @@ app/
   globals.css
   layout.tsx
   loading.tsx
+  manifest.ts
   page.tsx
+  robots.ts
+  sitemap.ts
 
 components/
   hooks/
@@ -95,10 +118,11 @@ cd usePopcorn
 cp .env.example .env.local
 ```
 
-Set your OMDb key in `.env.local`:
+Then set values in `.env.local`:
 
 ```bash
 OMDB_API_KEY=your_omdb_api_key_here
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
 ### 3. Install & Run
@@ -108,7 +132,7 @@ npm install
 npm run dev
 ```
 
-Open: `http://localhost:3000`
+Open `http://localhost:3000`
 
 ---
 
