@@ -15,14 +15,16 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <main className="mx-auto flex min-h-full w-full max-w-5xl flex-col justify-center p-4 sm:p-6 lg:p-10">
       <div className="mx-auto mb-4 flex w-full max-w-md items-center justify-between rounded-2xl border bg-background/80 px-4 py-3 backdrop-blur-sm">
         <div>
-          <Image
-            src="/watchmemo-logo-wordmark.svg"
-            alt="WatchMemo"
-            width={156}
-            height={32}
-            className="h-7 w-auto"
-            priority
-          />
+          <Link href="/" className="inline-flex" aria-label="Go to home">
+            <Image
+              src="/watchmemo-logo-wordmark.svg"
+              alt="WatchMemo"
+              width={156}
+              height={32}
+              className="h-7 w-auto"
+              priority
+            />
+          </Link>
           <p className="text-[11px] text-muted-foreground">Personal watch log</p>
         </div>
         <Link href="/" className="text-xs font-medium text-primary hover:underline">

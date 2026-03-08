@@ -26,13 +26,15 @@ export default function SiteFooter() {
       <div className="mx-auto w-full max-w-6xl px-4 py-3 text-sm text-muted-foreground sm:px-6 sm:py-3.5 lg:px-8">
         <div className="flex flex-col items-center gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="text-center lg:text-left">
-            <Image
-              src="/watchmemo-logo-wordmark.svg"
-              alt="WatchMemo"
-              width={170}
-              height={36}
-              className="mx-auto h-7 w-auto lg:mx-0"
-            />
+            <Link href="/" className="inline-flex" aria-label="Go to home">
+              <Image
+                src="/watchmemo-logo-wordmark.svg"
+                alt="WatchMemo"
+                width={170}
+                height={36}
+                className="mx-auto h-7 w-auto lg:mx-0"
+              />
+            </Link>
             <p className="mt-0.5 text-xs">
               © {new Date().getFullYear()} All rights reserved.
             </p>
