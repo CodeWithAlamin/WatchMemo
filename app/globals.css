@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+}
+
+:root {
+  --background: oklch(0.985 0.002 95);
+  --foreground: oklch(0.22 0.01 260);
+  --card: oklch(0.995 0.001 95);
+  --card-foreground: oklch(0.22 0.01 260);
+  --primary: oklch(0.63 0.17 63);
+  --primary-foreground: oklch(0.985 0.002 95);
+  --secondary: oklch(0.95 0.006 84);
+  --secondary-foreground: oklch(0.3 0.01 260);
+  --muted: oklch(0.96 0.004 95);
+  --muted-foreground: oklch(0.5 0.014 255);
+  --destructive: oklch(0.58 0.23 28);
+  --border: oklch(0.9 0.004 95);
+  --input: oklch(0.92 0.003 95);
+  --ring: oklch(0.63 0.17 63);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at 14% 8%, #fde68a 0%, transparent 34%),
+      radial-gradient(circle at 90% 20%, #bfdbfe 0%, transparent 28%),
+      linear-gradient(180deg, #fffdf5 0%, #f8fafc 55%, #eef2ff 100%);
+    min-height: 100vh;
+  }
+}
+
+.comment-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
