@@ -23,20 +23,28 @@ export default function MovieSearchInput({
 }: MovieSearchInputProps) {
   const DEBOUNCE_MS = 700;
   const [query, setQuery] = useState(initialQuery);
+  const [hasPendingUserInput, setHasPendingUserInput] = useState(false);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastAppliedQueryRef = useRef(initialQuery);
 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    setQuery(initialQuery);
+    if (initialQuery === lastAppliedQueryRef.current) {
+      setQuery(initialQuery);
+    }
+    setHasPendingUserInput(false);
   }, [initialQuery]);
 
   const applySearch = useCallback((nextQuery: string): void => {
     const trimmedQuery = nextQuery.trim();
     const currentQuery = (searchParams.get("q") ?? "").trim();
+
+    lastAppliedQueryRef.current = trimmedQuery;
+    setHasPendingUserInput(false);
 
     if (trimmedQuery === currentQuery) return;
 
@@ -52,9 +60,15 @@ export default function MovieSearchInput({
 
     startTransition(() => {
       const nextUrlQuery = nextParams.toString();
-      router.replace(nextUrlQuery ? `${pathname}?${nextUrlQuery}` : pathname, {
-        scroll: false,
-      });
+      const nextUrl = nextUrlQuery ? `${pathname}?${nextUrlQuery}` : pathname;
+
+      // Create one history step when moving from home -> searched state.
+      if (!currentQuery && trimmedQuery) {
+        router.push(nextUrl, { scroll: false });
+        return;
+      }
+
+      router.replace(nextUrl, { scroll: false });
     });
   }, [pathname, router, searchParams, startTransition]);
 
@@ -64,12 +78,14 @@ export default function MovieSearchInput({
   }
 
   useEffect(() => {
+    if (!hasPendingUserInput) return;
+
     const timeoutId = setTimeout(() => {
       applySearch(query);
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [query, DEBOUNCE_MS, applySearch]);
+  }, [query, DEBOUNCE_MS, applySearch, hasPendingUserInput]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -93,7 +109,10 @@ export default function MovieSearchInput({
           type="text"
           placeholder="Search by movie title..."
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setHasPendingUserInput(true);
+          }}
         />
         <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
           <Button size="sm" className="h-8 rounded-xl px-3" disabled={isPending}>

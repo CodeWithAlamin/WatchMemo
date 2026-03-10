@@ -337,7 +337,7 @@ export default function MovieTrackerClient({
     })();
   }, [authUser, selectedMovie, watched]);
 
-  const updateSearchParams = useCallback(
+  const replaceSearchParams = useCallback(
     (updater: (params: URLSearchParams) => void): void => {
       const params = new URLSearchParams(searchParams.toString());
       updater(params);
@@ -350,11 +350,24 @@ export default function MovieTrackerClient({
     [pathname, router, searchParams],
   );
 
+  const pushSearchParams = useCallback(
+    (updater: (params: URLSearchParams) => void): void => {
+      const params = new URLSearchParams(searchParams.toString());
+      updater(params);
+
+      const next = params.toString();
+      router.push(next ? `${pathname}?${next}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
   function handleSelectMovie(imdbID: string): void {
     const nextSelected = selectedId === imdbID ? null : imdbID;
     setPendingSelectedId(nextSelected);
 
-    updateSearchParams((params) => {
+    pushSearchParams((params) => {
       if (params.get("selected") === imdbID) {
         params.delete("selected");
       } else {
@@ -367,11 +380,11 @@ export default function MovieTrackerClient({
 
   const handleCloseMovie = useCallback((): void => {
     setPendingSelectedId(null);
-    updateSearchParams((params) => {
+    replaceSearchParams((params) => {
       params.delete("selected");
     });
     setMobilePanel("search");
-  }, [updateSearchParams]);
+  }, [replaceSearchParams]);
 
   useEffect(() => {
     if (pendingSelectedId !== null && selectedId === pendingSelectedId) {
@@ -392,7 +405,7 @@ export default function MovieTrackerClient({
   function handleMobilePanelChange(panel: "search" | "watched"): void {
     setMobilePanel(panel);
     setPendingSelectedId(null);
-    updateSearchParams((params) => {
+    replaceSearchParams((params) => {
       params.delete("selected");
     });
   }
