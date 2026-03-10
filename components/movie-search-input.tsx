@@ -26,18 +26,20 @@ export default function MovieSearchInput({
   const [hasPendingUserInput, setHasPendingUserInput] = useState(false);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const lastAppliedQueryRef = useRef(initialQuery);
+  const lastAppliedQueryRef = useRef(initialQuery.trim());
 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (initialQuery === lastAppliedQueryRef.current) {
-      setQuery(initialQuery);
-    }
+    if (hasPendingUserInput) return;
+
+    const nextQuery = initialQuery.trim();
+    lastAppliedQueryRef.current = nextQuery;
+    setQuery(initialQuery);
     setHasPendingUserInput(false);
-  }, [initialQuery]);
+  }, [initialQuery, hasPendingUserInput]);
 
   const applySearch = useCallback((nextQuery: string): void => {
     const trimmedQuery = nextQuery.trim();
