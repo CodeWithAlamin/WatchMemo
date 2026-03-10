@@ -16,6 +16,9 @@ const socialImage = "/thumbnail.png";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: siteName,
+  verification: {
+    google: "Ud_1N5b6ROzjS2VDBXVheEwRlJVZ1uzppKAhGynxIn8",
+  },
   referrer: "origin-when-cross-origin",
   formatDetection: {
     email: false,
