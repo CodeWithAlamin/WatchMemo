@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
@@ -27,7 +28,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </Link>
           <p className="text-[11px] text-muted-foreground">Personal watch log</p>
         </div>
-        <Link href="/" className="text-xs font-medium text-primary hover:underline">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10"
+        >
+          <ArrowLeft className="size-3.5" />
           Back home
         </Link>
       </div>

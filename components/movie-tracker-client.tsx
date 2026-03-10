@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  ArrowLeft,
   Clapperboard,
   Clock3,
   Film,
@@ -740,7 +741,13 @@ export default function MovieTrackerClient({
                 {activeSelectedId ? "Movie Details" : "Your Watched List"}
               </CardTitle>
               {activeSelectedId ? (
-                <Button variant="outline" size="sm" onClick={handleCloseMovie}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 border-primary/30 bg-primary/5 hover:bg-primary/10"
+                  onClick={handleCloseMovie}
+                >
+                  <ArrowLeft className="size-4" />
                   Back to results
                 </Button>
               ) : null}
@@ -1281,11 +1288,12 @@ function WatchedMovieItem({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           {!isEditing ? (
             <Button
               variant="outline"
               size="sm"
+              className="w-full justify-center"
               disabled={isDeleting || isUpdating}
               onClick={handleStartEditing}
             >
@@ -1297,6 +1305,7 @@ function WatchedMovieItem({
           <Button
             variant="destructive"
             size="sm"
+            className="w-full justify-center"
             disabled={isDeleting || isUpdating}
             onClick={() => onDeleteWatched(movie.imdbID)}
           >
@@ -1351,13 +1360,15 @@ function Poster({
   alt: string;
   size?: "sm" | "lg";
 }) {
-  const dimension = size === "lg" ? 120 : 56;
+  const frameClassName =
+    size === "lg"
+      ? "h-[168px] w-[120px] rounded-lg"
+      : "h-[84px] w-14 rounded-lg";
 
   if (!isAvailableText(src)) {
     return (
       <div
-        className="flex items-center justify-center rounded-lg border bg-muted text-xs font-semibold text-muted-foreground"
-        style={{ width: dimension, height: size === "lg" ? 168 : 84 }}
+        className={`shrink-0 overflow-hidden border bg-muted text-xs font-semibold text-muted-foreground ${frameClassName} flex items-center justify-center`}
       >
         No poster
       </div>
@@ -1365,14 +1376,16 @@ function Poster({
   }
 
   return (
-    <Image
-      src={src}
-      alt={alt}
-      width={dimension}
-      height={size === "lg" ? 168 : 84}
-      className="rounded-lg object-cover"
-      unoptimized
-    />
+    <div className={`relative shrink-0 overflow-hidden border bg-muted ${frameClassName}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={size === "lg" ? "120px" : "56px"}
+        className="object-cover"
+        unoptimized
+      />
+    </div>
   );
 }
 

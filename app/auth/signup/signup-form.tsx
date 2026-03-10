@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 type SubmitState = "idle" | "loading" | "error" | "success";
 type AuthUser = Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"];
 
-export default function SignUpForm() {
+export default function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawNextPath = searchParams.get("next") || "/";
@@ -44,8 +44,8 @@ export default function SignUpForm() {
 
     void supabase.auth.getUser().then(
       ({ data }: { data: { user: AuthUser } }) => {
-      if (!mounted) return;
-      if (data.user) router.replace(nextPath);
+        if (!mounted) return;
+        if (data.user) router.replace(nextPath);
       },
     );
 
@@ -59,7 +59,7 @@ export default function SignUpForm() {
     setSubmitState("loading");
     setError("");
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -70,9 +70,9 @@ export default function SignUpForm() {
       },
     });
 
-    if (signUpError) {
+    if (signupError) {
       setSubmitState("error");
-      setError(signUpError.message);
+      setError(signupError.message);
       return;
     }
 
@@ -122,7 +122,7 @@ export default function SignUpForm() {
               <Link href={`/auth/login?next=${encodedNext}`}>Login</Link>
             </Button>
             <Button asChild className="ring-1 ring-primary/40">
-              <Link href={`/auth/sign-up?next=${encodedNext}`}>Register</Link>
+              <Link href={`/auth/signup?next=${encodedNext}`}>Signup</Link>
             </Button>
           </div>
 
@@ -153,9 +153,7 @@ export default function SignUpForm() {
             />
 
             <Button className="w-full" disabled={submitState === "loading"}>
-              {submitState === "loading"
-                ? "Creating account..."
-                : "Create account"}
+              {submitState === "loading" ? "Signing up..." : "Signup"}
             </Button>
           </form>
 

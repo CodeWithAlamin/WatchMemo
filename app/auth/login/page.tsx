@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SignInForm from "../sign-in/sign-in-form";
+import LoginForm from "./login-form";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -26,5 +26,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <SignInForm />;
+  return <LoginForm />;
 }

@@ -1,30 +1,30 @@
 import type { Metadata } from "next";
-import SignUpForm from "./sign-up-form";
+import SignupForm from "./signup-form";
 
 export const metadata: Metadata = {
-  title: "Sign up",
+  title: "Signup",
   description: "Create a WatchMemo account to save ratings and personal movie notes.",
   alternates: {
-    canonical: "/auth/sign-up",
+    canonical: "/auth/signup",
   },
   robots: {
     index: false,
     follow: false,
   },
   openGraph: {
-    title: "Sign Up | WatchMemo",
+    title: "Signup | WatchMemo",
     description: "Create your WatchMemo account.",
-    url: "/auth/sign-up",
+    url: "/auth/signup",
     images: ["/thumbnail.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign Up | WatchMemo",
+    title: "Signup | WatchMemo",
     description: "Create your WatchMemo account.",
     images: ["/thumbnail.png"],
   },
 };
 
-export default function SignUpPage() {
-  return <SignUpForm />;
+export default function SignupPage() {
+  return <SignupForm />;
 }

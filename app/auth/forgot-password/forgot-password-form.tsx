@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ export default function ForgotPasswordForm() {
               </p>
               <Button asChild className="w-full">
                 <Link href={`/auth/login?next=${encodeURIComponent(nextPath)}`}>
+                  <ArrowLeft className="size-4" />
                   Back to login
                 </Link>
               </Button>
@@ -101,8 +103,9 @@ export default function ForgotPasswordForm() {
           <div className="mt-4 text-right text-sm">
             <Link
               href={`/auth/login?next=${encodeURIComponent(nextPath)}`}
-              className="font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 font-medium text-primary transition hover:bg-primary/10"
             >
+              <ArrowLeft className="size-3.5" />
               Back to login
             </Link>
           </div>

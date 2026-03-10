@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
@@ -24,12 +25,16 @@ export default function ProfileClient() {
   const [loading, setLoading] = useState(true);
 
   const [displayName, setDisplayName] = useState("");
-  const [nameStatus, setNameStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [nameStatus, setNameStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [nameError, setNameError] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordStatus, setPasswordStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [passwordStatus, setPasswordStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
@@ -136,19 +141,35 @@ export default function ProfileClient() {
     <main className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
       <section className="mb-4 flex items-center justify-between rounded-2xl border bg-background/90 px-4 py-3 backdrop-blur-sm">
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Profile settings</h1>
-          <p className="text-sm text-muted-foreground">Manage your account securely.</p>
+          <h1 className="text-2xl font-black tracking-tight">
+            Profile settings
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your account securely.
+          </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/">Back home</Link>
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="border-primary/30 bg-primary/5 hover:bg-primary/10"
+        >
+          <Link href="/">
+            <ArrowLeft className="size-4" />
+            Back home
+          </Link>
         </Button>
       </section>
 
       <div className="space-y-4">
         <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl font-black tracking-tight">Basic profile</CardTitle>
-            <CardDescription>Set how your name appears in the app.</CardDescription>
+            <CardTitle className="text-xl font-black tracking-tight">
+              Basic profile
+            </CardTitle>
+            <CardDescription className="mb-2">
+              Set how your name appears in the app.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-3" onSubmit={handleNameSubmit}>
@@ -184,8 +205,10 @@ export default function ProfileClient() {
 
         <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl font-black tracking-tight">Change password</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl font-black tracking-tight">
+              Change password
+            </CardTitle>
+            <CardDescription className="mb-2">
               Use at least 8 characters. Avoid reusing old passwords.
             </CardDescription>
           </CardHeader>
@@ -209,7 +232,9 @@ export default function ProfileClient() {
               />
 
               <Button disabled={passwordStatus === "loading"}>
-                {passwordStatus === "loading" ? "Updating..." : "Update password"}
+                {passwordStatus === "loading"
+                  ? "Updating..."
+                  : "Update password"}
               </Button>
             </form>
 

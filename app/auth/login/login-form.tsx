@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 type SubmitState = "idle" | "loading" | "error";
 type AuthUser = Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"];
 
-export default function SignInForm() {
+export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawNextPath = searchParams.get("next") || "/";
@@ -35,8 +35,8 @@ export default function SignInForm() {
 
     void supabase.auth.getUser().then(
       ({ data }: { data: { user: AuthUser } }) => {
-      if (!mounted) return;
-      if (data.user) router.replace(nextPath);
+        if (!mounted) return;
+        if (data.user) router.replace(nextPath);
       },
     );
 
@@ -50,14 +50,14 @@ export default function SignInForm() {
     setSubmitState("loading");
     setError("");
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (signInError) {
+    if (loginError) {
       setSubmitState("error");
-      setError(signInError.message);
+      setError(loginError.message);
       return;
     }
 
@@ -82,7 +82,7 @@ export default function SignInForm() {
               <Link href={`/auth/login?next=${encodedNext}`}>Login</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href={`/auth/sign-up?next=${encodedNext}`}>Register</Link>
+              <Link href={`/auth/signup?next=${encodedNext}`}>Signup</Link>
             </Button>
           </div>
 
