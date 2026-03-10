@@ -4,6 +4,7 @@ import {
   type FormEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
@@ -18,76 +19,101 @@ interface MovieSearchInputProps {
   initialQuery: string;
 }
 
+const DEBOUNCE_MS = 700;
+
+function normalizeSearchQuery(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
 export default function MovieSearchInput({
   initialQuery,
 }: MovieSearchInputProps) {
-  const DEBOUNCE_MS = 700;
-  const [query, setQuery] = useState(initialQuery);
-  const [hasPendingUserInput, setHasPendingUserInput] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const lastAppliedQueryRef = useRef(initialQuery.trim());
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const urlQuery = useMemo(
+    () => (searchParams.get("q") ?? initialQuery).trim(),
+    [initialQuery, searchParams],
+  );
+
+  const [draftQuery, setDraftQuery] = useState(initialQuery);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const pendingQueryRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (hasPendingUserInput) return;
+    const pendingQuery = pendingQueryRef.current;
+    const normalizedDraft = normalizeSearchQuery(draftQuery);
 
-    const nextQuery = initialQuery.trim();
-    lastAppliedQueryRef.current = nextQuery;
-    setQuery(initialQuery);
-    setHasPendingUserInput(false);
-  }, [initialQuery, hasPendingUserInput]);
-
-  const applySearch = useCallback((nextQuery: string): void => {
-    const trimmedQuery = nextQuery.trim();
-    const currentQuery = (searchParams.get("q") ?? "").trim();
-
-    lastAppliedQueryRef.current = trimmedQuery;
-    setHasPendingUserInput(false);
-
-    if (trimmedQuery === currentQuery) return;
-
-    const nextParams = new URLSearchParams(searchParams.toString());
-
-    if (trimmedQuery) {
-      nextParams.set("q", trimmedQuery);
-    } else {
-      nextParams.delete("q");
+    if (pendingQuery !== null) {
+      if (urlQuery === pendingQuery) {
+        pendingQueryRef.current = null;
+        setIsDirty(false);
+      }
+      return;
     }
 
-    nextParams.delete("selected");
+    if (isDirty) {
+      return;
+    }
 
-    startTransition(() => {
-      const nextUrlQuery = nextParams.toString();
-      const nextUrl = nextUrlQuery ? `${pathname}?${nextUrlQuery}` : pathname;
+    if (normalizedDraft !== urlQuery) {
+      setDraftQuery(urlQuery);
+    }
+  }, [draftQuery, isDirty, urlQuery]);
 
-      // Create one history step when moving from home -> searched state.
-      if (!currentQuery && trimmedQuery) {
-        router.push(nextUrl, { scroll: false });
+  const applySearch = useCallback(
+    (rawValue: string): void => {
+      const normalizedQuery = normalizeSearchQuery(rawValue);
+      pendingQueryRef.current = normalizedQuery;
+
+      if (normalizedQuery === urlQuery) {
+        pendingQueryRef.current = null;
+        setIsDirty(false);
         return;
       }
 
-      router.replace(nextUrl, { scroll: false });
-    });
-  }, [pathname, router, searchParams, startTransition]);
+      const nextParams = new URLSearchParams(searchParams.toString());
+
+      if (normalizedQuery) {
+        nextParams.set("q", normalizedQuery);
+      } else {
+        nextParams.delete("q");
+      }
+
+      nextParams.delete("selected");
+
+      startTransition(() => {
+        const nextQueryString = nextParams.toString();
+        const nextUrl = nextQueryString ? `${pathname}?${nextQueryString}` : pathname;
+
+        if (!urlQuery && normalizedQuery) {
+          router.push(nextUrl, { scroll: false });
+          return;
+        }
+
+        router.replace(nextUrl, { scroll: false });
+      });
+    },
+    [pathname, router, searchParams, startTransition, urlQuery],
+  );
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    applySearch(query);
+    applySearch(draftQuery);
   }
 
   useEffect(() => {
-    if (!hasPendingUserInput) return;
+    if (!isDirty) return;
 
-    const timeoutId = setTimeout(() => {
-      applySearch(query);
+    const timeoutId = window.setTimeout(() => {
+      applySearch(draftQuery);
     }, DEBOUNCE_MS);
 
-    return () => clearTimeout(timeoutId);
-  }, [query, DEBOUNCE_MS, applySearch, hasPendingUserInput]);
+    return () => window.clearTimeout(timeoutId);
+  }, [applySearch, draftQuery, isDirty]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -110,10 +136,10 @@ export default function MovieSearchInput({
           className="h-12 w-full rounded-2xl border bg-background/80 pl-10 pr-24 text-sm shadow-sm transition focus-visible:ring-2"
           type="text"
           placeholder="Search by movie title..."
-          value={query}
+          value={draftQuery}
           onChange={(event) => {
-            setQuery(event.target.value);
-            setHasPendingUserInput(true);
+            setDraftQuery(event.target.value);
+            setIsDirty(true);
           }}
         />
         <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
