@@ -16,7 +16,7 @@ export default function MovieSearchForm({
           id="movie-search"
           name="q"
           type="search"
-          minLength={3}
+          minLength={2}
           placeholder="Search movies"
           defaultValue={initialQuery}
           className="h-11 rounded-xl border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:ring-primary"

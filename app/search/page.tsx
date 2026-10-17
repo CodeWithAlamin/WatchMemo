@@ -33,7 +33,7 @@ export default async function SearchPage({
   let movies = [] as Awaited<ReturnType<typeof searchMovies>>;
   let errorMessage = "";
 
-  if (query.length >= 3) {
+  if (query.length >= 2) {
     try {
       movies = await searchMovies(query);
     } catch (error) {
@@ -57,8 +57,8 @@ export default async function SearchPage({
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {errorMessage}
         </div>
-      ) : query.length < 3 ? (
-        <p className="text-sm text-muted-foreground">Enter at least 3 characters to search.</p>
+      ) : query.length < 2 ? (
+        null
       ) : (
         <section className="w-full space-y-4" aria-labelledby="search-results-heading">
           <h2 id="search-results-heading" className="text-lg font-semibold tracking-tight">

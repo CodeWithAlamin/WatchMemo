@@ -105,7 +105,7 @@ export async function getMovieDiscovery(): Promise<MovieDiscovery> {
 
 export async function searchMovies(query: string): Promise<MovieSearchResult[]> {
   const normalizedQuery = query.trim();
-  if (normalizedQuery.length < 3) return [];
+  if (normalizedQuery.length < 2) return [];
 
   const params = new URLSearchParams({ query: normalizedQuery, language: "en-US", page: "1" });
   const data = await tmdbRequest<TmdbListResponse>(`/search/movie?${params}`);
