@@ -66,18 +66,18 @@ export default function LoginForm() {
 
   return (
     <div className="mx-auto max-w-md">
-      <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-        <CardHeader>
-          <CardTitle className="pb-1 text-2xl font-black tracking-tight">
+      <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+        <CardHeader className="px-5 pt-5">
+          <CardTitle className="pb-1 text-xl font-black tracking-tight">
             Welcome back
           </CardTitle>
-          <CardDescription className="pb-3">
+          <CardDescription className="pb-2">
             Login to keep your watched movies, ratings, and notes synced.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="mb-4 grid grid-cols-2 gap-2">
+        <CardContent className="px-5 pb-5">
+          <div className="mb-3 grid grid-cols-2 gap-2">
             <Button asChild className="ring-1 ring-primary/40">
               <Link href={`/auth/login?next=${encodedNext}`}>Login</Link>
             </Button>
@@ -86,7 +86,7 @@ export default function LoginForm() {
             </Button>
           </div>
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-2.5" onSubmit={handleSubmit}>
             <Input
               type="email"
               placeholder="Email address"

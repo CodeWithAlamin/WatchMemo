@@ -1,104 +1,41 @@
 import type { Metadata } from "next";
-import MovieTrackerClient from "@/components/movie-tracker-client";
-import { getMovieDetails, searchMovies } from "@/lib/omdb";
-import type { SearchParams } from "@/lib/types";
+import MovieDiscoverySections from "@/components/movie-discovery";
+import MovieSearchForm from "@/components/movie-search-form";
+import SiteHeader from "@/components/site-header";
+import { getMovieDiscovery } from "@/lib/tmdb";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Discover Movies",
+  description: "Browse movies, search by title, and save ratings and notes.",
+  alternates: { canonical: "/" },
+};
 
-const siteName = "WatchMemo";
-const pageDescription =
-  "Track what you watched, add personal ratings, and keep movie notes in one place.";
+export default async function HomePage() {
+  const discovery = await getMovieDiscovery();
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}): Promise<Metadata> {
-  const resolvedParams = await searchParams;
-  const query = getParam(resolvedParams?.q).trim();
+  return (
+    <main className="page-shell flex flex-col gap-6">
+      <SiteHeader />
 
-  const title = query
-    ? `Search "${query}" movies`
-    : "Track Your Watched Movies";
-  const description = query
-    ? `Browse search results for "${query}" on WatchMemo and rate movies you watch.`
-    : pageDescription;
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 px-5 py-6 text-white shadow-xl shadow-blue-950/15 sm:px-8 sm:py-8">
+        <div className="pointer-events-none absolute -right-24 -top-32 size-72 rounded-full bg-amber-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 left-1/3 size-72 rounded-full bg-sky-400/20 blur-3xl" />
+        <div className="relative grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:items-center">
+          <div>
+            <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+              Find a movie.
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-5 text-blue-100 sm:text-base">
+              Browse popular movies or search by title. Save ratings and notes to your history.
+            </p>
+          </div>
+          <div className="w-full lg:justify-self-end">
+            <MovieSearchForm />
+          </div>
+        </div>
+      </section>
 
-  return {
-    title,
-    description,
-    robots: query
-      ? {
-          index: false,
-          follow: true,
-        }
-      : {
-          index: true,
-          follow: true,
-        },
-    alternates: {
-      canonical: "/",
-    },
-    openGraph: {
-      title: `${title} | ${siteName}`,
-      description,
-      url: query ? `/?q=${encodeURIComponent(query)}` : "/",
-      images: [
-        {
-          url: "/thumbnail.png",
-          width: 1200,
-          height: 630,
-          alt: `${siteName} preview`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} | ${siteName}`,
-      description,
-      images: ["/thumbnail.png"],
-    },
-  };
-}
-
-function getParam(value: string | string[] | undefined): string {
-  return typeof value === "string" ? value : "";
-}
-
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const resolvedParams = await searchParams;
-  const query = getParam(resolvedParams?.q);
-  const selectedId = getParam(resolvedParams?.selected);
-
-  try {
-    const [movies, selectedMovie] = await Promise.all([
-      searchMovies(query),
-      selectedId ? getMovieDetails(selectedId) : Promise.resolve(null),
-    ]);
-
-    return (
-      <MovieTrackerClient
-        initialQuery={query}
-        movies={movies}
-        selectedMovie={selectedMovie}
-        fetchError=""
-      />
-    );
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to fetch movies.";
-
-    return (
-      <MovieTrackerClient
-        initialQuery={query}
-        movies={[]}
-        selectedMovie={null}
-        fetchError={errorMessage}
-      />
-    );
-  }
+      <MovieDiscoverySections discovery={discovery} />
+    </main>
+  );
 }

@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
@@ -17,6 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import SiteHeader from "@/components/site-header";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfileClient() {
   const router = useRouter();
@@ -129,41 +129,37 @@ export default function ProfileClient() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-        <div className="rounded-2xl border bg-card p-8 text-center text-sm font-medium text-muted-foreground">
-          Loading your profile...
+      <main className="page-shell flex flex-col gap-5">
+        <SiteHeader />
+        <div className="mx-auto w-full max-w-6xl space-y-4" aria-label="Loading profile" aria-busy="true">
+          <Skeleton className="h-24 rounded-2xl" />
+          <div className="grid gap-3 lg:grid-cols-2">
+            <Skeleton className="h-52 rounded-2xl" />
+            <Skeleton className="h-52 rounded-2xl" />
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-      <section className="mb-4 flex items-center justify-between rounded-2xl border bg-background/90 px-4 py-3 backdrop-blur-sm">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight">
-            Profile settings
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your account securely.
-          </p>
-        </div>
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="border-primary/30 bg-primary/5 hover:bg-primary/10"
-        >
-          <Link href="/">
-            <ArrowLeft className="size-4" />
-            Back home
-          </Link>
-        </Button>
-      </section>
+    <main className="page-shell flex flex-col gap-5">
+      <SiteHeader />
+      <div className="mx-auto w-full max-w-6xl space-y-5">
+        <section className="rounded-2xl border border-white/70 bg-white/65 p-4 backdrop-blur-sm sm:p-5">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">
+              Profile settings
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your account securely.
+            </p>
+          </div>
+        </section>
 
-      <div className="space-y-4">
-        <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-          <CardHeader>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+          <CardHeader className="px-5 pt-5">
             <CardTitle className="text-xl font-black tracking-tight">
               Basic profile
             </CardTitle>
@@ -171,7 +167,7 @@ export default function ProfileClient() {
               Set how your name appears in the app.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-5 pb-5">
             <form className="space-y-3" onSubmit={handleNameSubmit}>
               <Input type="email" value={user?.email ?? ""} disabled />
               <Input
@@ -203,8 +199,8 @@ export default function ProfileClient() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-          <CardHeader>
+        <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+          <CardHeader className="px-5 pt-5">
             <CardTitle className="text-xl font-black tracking-tight">
               Change password
             </CardTitle>
@@ -212,7 +208,7 @@ export default function ProfileClient() {
               Use at least 8 characters. Avoid reusing old passwords.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-5 pb-5">
             <form className="space-y-3" onSubmit={handlePasswordSubmit}>
               <Input
                 type="password"
@@ -251,6 +247,7 @@ export default function ProfileClient() {
             ) : null}
           </CardContent>
         </Card>
+      </div>
       </div>
     </main>
   );

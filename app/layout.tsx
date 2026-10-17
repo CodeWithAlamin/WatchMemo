@@ -118,7 +118,7 @@ export default function RootLayout({
       description: siteDescription,
       potentialAction: {
         "@type": "SearchAction",
-        target: `${siteUrl}/?q={search_term_string}`,
+        target: `${siteUrl}/search?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
@@ -131,8 +131,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <div className="flex min-h-screen flex-col lg:h-dvh lg:overflow-hidden">
-          <main className="flex-1 lg:overflow-hidden">{children}</main>
+        <div className="flex min-h-screen flex-col">
+          <div className="flex-1">{children}</div>
           <SiteFooter />
         </div>
       </body>

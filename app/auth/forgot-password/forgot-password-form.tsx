@@ -58,17 +58,17 @@ export default function ForgotPasswordForm() {
 
   return (
     <div className="mx-auto max-w-md">
-      <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-black tracking-tight">
+      <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+        <CardHeader className="px-5 pt-5">
+          <CardTitle className="text-xl font-black tracking-tight">
             Reset your password
           </CardTitle>
-          <CardDescription className="pb-3">
+          <CardDescription className="pb-2">
             Enter your email and we will send you a secure reset link.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="px-5 pb-5">
           {submitState === "success" ? (
             <div className="space-y-3">
               <p className="rounded-xl border bg-muted p-3 text-sm font-medium text-muted-foreground">

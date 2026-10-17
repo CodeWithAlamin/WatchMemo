@@ -82,16 +82,16 @@ export default function SignupForm() {
   if (submitState === "success") {
     return (
       <div className="mx-auto max-w-md">
-        <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-black tracking-tight">
+        <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+          <CardHeader className="px-5 pt-5">
+            <CardTitle className="text-xl font-black tracking-tight">
               Account created
             </CardTitle>
             <CardDescription>
               Check your inbox and verify your email if confirmation is enabled.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-5 pb-5">
             <Button
               className="w-full"
               onClick={() => router.push(`/auth/login?next=${encodedNext}`)}
@@ -106,18 +106,18 @@ export default function SignupForm() {
 
   return (
     <div className="mx-auto max-w-md">
-      <Card className="rounded-3xl border-0 bg-card/95 shadow-lg">
-        <CardHeader>
-          <CardTitle className="pb-1 text-2xl font-black tracking-tight">
+      <Card className="rounded-2xl border-0 bg-card/95 py-0 shadow-md">
+        <CardHeader className="px-5 pt-5">
+          <CardTitle className="pb-1 text-xl font-black tracking-tight">
             Create your account
           </CardTitle>
-          <CardDescription className="pb-3">
+          <CardDescription className="pb-2">
             Build your private movie history with ratings and personal notes.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="mb-4 grid grid-cols-2 gap-2">
+        <CardContent className="px-5 pb-5">
+          <div className="mb-3 grid grid-cols-2 gap-2">
             <Button asChild variant="outline">
               <Link href={`/auth/login?next=${encodedNext}`}>Login</Link>
             </Button>
@@ -126,7 +126,7 @@ export default function SignupForm() {
             </Button>
           </div>
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-2.5" onSubmit={handleSubmit}>
             <Input
               type="text"
               placeholder="Display name"

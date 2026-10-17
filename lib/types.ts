@@ -1,14 +1,16 @@
 export type SearchParams = Record<string, string | string[] | undefined>;
 
-export interface OmdbSearchMovie {
+export interface MovieSearchResult {
   imdbID: string;
+  tmdbID: number;
   Title: string;
   Year: string;
   Poster: string;
   Type: string;
 }
 
-export interface OmdbMovieDetails {
+export interface MovieDetails {
+  tmdbID: number;
   imdbID: string;
   Title: string;
   Year: string;
@@ -24,6 +26,7 @@ export interface OmdbMovieDetails {
 
 export interface WatchedMovie {
   imdbID: string;
+  tmdbID?: number;
   title: string;
   year: string;
   poster: string;

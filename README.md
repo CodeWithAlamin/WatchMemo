@@ -14,14 +14,16 @@ WatchMemo is a movie tracking web app focused on personal context, not just list
 You can discover movies publicly, and when you log in, you can keep a private watched history with ratings and personal notes.
 
 ## Current Features
-- Public movie search (no login required)
+- Movie discovery homepage with trending, now playing, and upcoming movies
+- Dedicated movie search and movie detail pages (no login required)
+- Private watch history page with ratings, notes, edit, and remove actions
 - Supabase authentication (login, signup, password reset, password update)
 - Profile settings (display name + password update)
 - Save watched movies with rating and optional note
 - Edit or remove watched entries anytime
 - Optimistic UI updates for save/edit/delete actions
 - Loading skeletons and responsive mobile/desktop layout
-- Search with controlled debouncing + manual submit
+- Dedicated routes for discovery, search, movie details, and watch history
 - SEO setup with metadata, Open Graph, Twitter cards, sitemap, robots, and JSON-LD
 
 ## Tech Stack
@@ -30,15 +32,17 @@ You can discover movies publicly, and when you log in, you can keep a private wa
 - Tailwind CSS v4
 - shadcn-style UI components
 - Supabase (Auth + Postgres)
-- OMDb API
+- TMDB API (search, movie details, posters, and discovery)
 
 ## Environment Variables
 ```bash
-OMDB_API_KEY=your_omdb_api_key_here
+TMDB_API_READ_ACCESS_TOKEN=your_tmdb_api_read_access_token_here
 NEXT_PUBLIC_SITE_URL=https://watchmemo.vercel.app
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+The TMDB read access token is used only on the server for movie search, details, posters, and discovery. Movie lists and details are cached to reduce API requests.
 
 ## Data Layer
 Database schema and RLS policies:
@@ -54,6 +58,8 @@ Core columns used by the app:
 - `comment`
 - `movie_snapshot` (JSON snapshot for quick watched list rendering)
 - `created_at`, `updated_at`
+
+Existing watch history remains compatible. Rows keep their current `imdb_id` values; new movie snapshots also include the TMDB ID. Movies without an IMDb ID use a `tmdb:`-prefixed value in the existing text key, so no history-table migration is required.
 
 ## Scripts
 ```bash

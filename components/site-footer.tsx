@@ -23,7 +23,7 @@ const socialLinks = [
 export default function SiteFooter() {
   return (
     <footer className="border-t border-border/70 bg-background/80">
-      <div className="mx-auto w-full max-w-6xl px-4 py-3 text-sm text-muted-foreground sm:px-6 sm:py-3.5 lg:px-8">
+      <div className="page-shell py-3 text-sm text-muted-foreground sm:py-3.5">
         <div className="flex flex-col items-center gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="text-center lg:text-left">
             <Link href="/" className="inline-flex" aria-label="Go to home">
@@ -43,6 +43,10 @@ export default function SiteFooter() {
           <p className="text-center text-xs sm:text-sm">
             Crafted with <span aria-hidden="true">♥</span> by{" "}
             <span className="font-semibold text-foreground">CodeWithAlamin</span>
+          </p>
+
+          <p className="sr-only">
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
           </p>
 
           <nav

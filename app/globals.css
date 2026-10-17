@@ -58,6 +58,27 @@ html {
   }
 }
 
+@layer components {
+  .page-shell {
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .page-shell {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .page-shell {
+      padding: 1.5rem 2rem;
+    }
+  }
+}
+
 /* Minimal branded scrollbar */
 * {
   scrollbar-width: thin;
@@ -89,4 +110,49 @@ html {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.mobile-menu-pop {
+  transform-origin: top right;
+  animation: mobile-menu-pop 120ms ease-out;
+}
+
+@keyframes mobile-menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(
+    100deg,
+    color-mix(in oklch, var(--muted) 72%, white) 25%,
+    color-mix(in oklch, var(--muted) 42%, white) 50%,
+    color-mix(in oklch, var(--muted) 72%, white) 75%
+  );
+  background-size: 220% 100%;
+  animation: loading-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes loading-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-shimmer,
+  .mobile-menu-pop {
+    animation: none;
+  }
+
+  .loading-shimmer {
+    background-position: 50% 0;
+  }
 }

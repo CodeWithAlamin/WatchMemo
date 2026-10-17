@@ -15,6 +15,9 @@ create table if not exists public.watched_movies (
   unique(user_id, imdb_id)
 );
 
+comment on column public.watched_movies.imdb_id is
+  'Stable movie key. Existing rows use IMDb IDs; movies without an IMDb ID use tmdb:<id>.';
+
 create index if not exists watched_movies_user_id_idx on public.watched_movies(user_id);
 create index if not exists watched_movies_updated_at_idx on public.watched_movies(updated_at desc);
 
