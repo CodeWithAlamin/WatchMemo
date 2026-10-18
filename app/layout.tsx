@@ -10,7 +10,7 @@ const siteName = "WatchMemo";
 const siteDescription =
   "WatchMemo is your personal movie watch history tracker. Search films, rate what you watched, and keep private viewing notes for future reference.";
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://watchmemo.vercel.app";
+  (process.env.NEXT_PUBLIC_SITE_URL || "https://watchmemo.vercel.app").replace(/\/+$/, "");
 const socialImage = "/thumbnail.png";
 
 export const metadata: Metadata = {
@@ -41,9 +41,6 @@ export const metadata: Metadata = {
     "personal watch log",
     "movie ratings",
   ],
-  alternates: {
-    canonical: "/",
-  },
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [{ url: "/watchmemo-logo-mark.svg", type: "image/svg+xml" }],

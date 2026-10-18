@@ -24,12 +24,31 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
   if (!isImdbId(imdbId)) return { title: "Movie not found" };
   try {
     const movie = await getCachedMovieDetails(imdbId);
+    if (!movie) return { title: "Movie not found", robots: { index: false } };
+    const canonical = movie.tmdbID
+      ? `/movie/tmdb/${movie.tmdbID}`
+      : `/movie/${imdbId}`;
+    const description = movie.Plot && movie.Plot !== "N/A"
+      ? movie.Plot
+      : `Movie details and personal ratings for ${movie.Title}.`;
+    const image = movie.Poster !== "N/A" ? movie.Poster : undefined;
     return {
-      title: movie?.Title ?? "Movie details",
-      description: movie?.Plot && movie.Plot !== "N/A"
-        ? movie.Plot
-        : `Movie details and personal ratings for ${movie?.Title ?? "this movie"}.`,
-      alternates: { canonical: `/movie/${imdbId}` },
+      title: movie.Title,
+      description,
+      alternates: { canonical },
+      openGraph: {
+        type: "website",
+        title: `${movie.Title} | WatchMemo`,
+        description,
+        url: canonical,
+        ...(image ? { images: [{ url: image, alt: `${movie.Title} poster` }] } : {}),
+      },
+      twitter: {
+        card: image ? "summary_large_image" : "summary",
+        title: `${movie.Title} | WatchMemo`,
+        description,
+        ...(image ? { images: [image] } : {}),
+      },
     };
   } catch {
     return { title: "Movie details" };

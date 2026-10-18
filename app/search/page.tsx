@@ -21,6 +21,7 @@ export async function generateMetadata({
       ? `Search movie titles matching ${query} in WatchMemo.`
       : "Search for movies by title.",
     robots: { index: false, follow: true },
+    alternates: { canonical: "/search" },
   };
 }
 

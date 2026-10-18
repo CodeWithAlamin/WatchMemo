@@ -35,10 +35,28 @@ export async function generateMetadata({ params }: TmdbMoviePageProps): Promise<
   if (!id) return { title: "Movie not found", robots: { index: false } };
   try {
     const movie = await getCachedMovie(id);
+    if (!movie) return { title: "Movie not found", robots: { index: false } };
+    const description = movie.Plot && movie.Plot !== "N/A"
+      ? movie.Plot
+      : `View details, rate, and save ${movie.Title} to your WatchMemo history.`;
+    const image = movie.Poster !== "N/A" ? movie.Poster : undefined;
     return {
-      title: movie?.Title ?? "Movie details",
-      description: movie?.Plot && movie.Plot !== "N/A" ? movie.Plot : "Movie details and ratings.",
-      robots: { index: false, follow: true },
+      title: movie.Title,
+      description,
+      alternates: { canonical: `/movie/tmdb/${id}` },
+      openGraph: {
+        type: "website",
+        title: `${movie.Title} | WatchMemo`,
+        description,
+        url: `/movie/tmdb/${id}`,
+        ...(image ? { images: [{ url: image, alt: `${movie.Title} poster` }] } : {}),
+      },
+      twitter: {
+        card: image ? "summary_large_image" : "summary",
+        title: `${movie.Title} | WatchMemo`,
+        description,
+        ...(image ? { images: [image] } : {}),
+      },
     };
   } catch {
     return { title: "Movie details", robots: { index: false, follow: true } };
@@ -67,8 +85,27 @@ export default async function TmdbMoviePage({ params, searchParams }: TmdbMovieP
     errorMessage = error instanceof Error ? error.message : "Movie details are unavailable.";
   }
 
+  const movieJsonLd = movie
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Movie",
+        name: movie.Title,
+        ...(movie.Plot !== "N/A" ? { description: movie.Plot } : {}),
+        ...(movie.Released !== "N/A" ? { datePublished: movie.Released } : {}),
+        ...(movie.Poster !== "N/A" ? { image: movie.Poster } : {}),
+        ...(movie.Genre !== "N/A" ? { genre: movie.Genre.split(", ") } : {}),
+        url: `${(process.env.NEXT_PUBLIC_SITE_URL || "https://watchmemo.vercel.app").replace(/\/+$/, "")}/movie/tmdb/${id}`,
+      }
+    : null;
+
   return (
     <div className="page-shell">
+      {movieJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(movieJsonLd).replace(/</g, "\\u003c") }}
+        />
+      ) : null}
       <SiteHeader />
       {movie ? (
         <MovieDetailClient movie={movie} backHref={backHref} backLabel={backLabel} currentHref={currentHref} />
